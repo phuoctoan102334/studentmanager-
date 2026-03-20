@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Sinh viên</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 30px; }
+        table { border-collapse: collapse; width: 80%; margin-top: 10px; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        input, button { padding: 6px 12px; margin: 4px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button.delete { background-color: #e53935; }
+        button.update { background-color: #1976D2; }
+        .form-group { margin: 6px 0; }
+        label { display: inline-block; width: 80px; }
+        #searchResult { margin-top: 10px; color: #333; }
+    </style>
+</head>
+<body>
+
+<h1>📚 QUẢN LÝ SINH VIÊN</h1>
+
+<!-- YEU CAU 7: Hien thi danh sach sinh vien -->
+<h2>Danh sách Sinh viên</h2>
+<button onclick="loadStudents()">🔄 Tải lại</button>
+<table id="studentTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Họ tên</th>
+            <th>Tuổi</th>
+            <th>Email</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody id="studentBody"></tbody>
+</table>
+
+<!-- YEU CAU 10: Tim kiem sinh vien -->
+<h2>Tìm kiếm Sinh viên</h2>
+<input type="text" id="searchName" placeholder="Nhập tên cần tìm...">
+<button onclick="searchStudent()">🔍 Tìm</button>
+<div id="searchResult"></div>
+
+<!-- YEU CAU 10: Them moi sinh vien -->
+<h2>Thêm Sinh viên mới</h2>
+<div class="form-group"><label>ID:</label><input type="number" id="addId" placeholder="ID"></div>
+<div class="form-group"><label>Họ tên:</label><input type="text" id="addName" placeholder="Họ tên"></div>
+<div class="form-group"><label>Tuổi:</label><input type="number" id="addAge" placeholder="Tuổi"></div>
+<div class="form-group"><label>Email:</label><input type="email" id="addEmail" placeholder="Email"></div>
+<button onclick="addStudent()">➕ Thêm</button>
+<div id="addResult"></div>
+
+<!-- YEU CAU 9: Cap nhat sinh vien -->
+<h2>Cập nhật Sinh viên</h2>
+<div class="form-group"><label>ID:</label><input type="number" id="updateId" placeholder="ID cần sửa"></div>
+<div class="form-group"><label>Họ tên:</label><input type="text" id="updateName" placeholder="Họ tên mới"></div>
+<div class="form-group"><label>Tuổi:</label><input type="number" id="updateAge" placeholder="Tuổi mới"></div>
+<div class="form-group"><label>Email:</label><input type="email" id="updateEmail" placeholder="Email mới"></div>
+<button class="update" onclick="updateStudent()">✏️ Cập nhật</button>
+<div id="updateResult"></div>
+
+<script>
+    const API = '/api/students';
+
+    // YEU CAU 7: Lay danh sach sinh vien - Get All
+    function loadStudents() {
+        fetch(API)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('studentBody');
+                tbody.innerHTML = '';
+                data.forEach(sv => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${sv.id}</td>
+                            <td>${sv.name}</td>
+                            <td>${sv.age}</td>
+                            <td>${sv.email}</td>
+                            <td>
+                                <button class="delete" onclick="deleteStudent(${sv.id})">🗑 Xóa</button>
+                                <button class="update" onclick="fillUpdate(${sv.id},'${sv.name}',${sv.age},'${sv.email}')">✏️ Sửa</button>
+                            </td>
+                        </tr>`;
+                });
+            });
+    }
+
+    // YEU CAU 10: Tim kiem sinh vien theo ten
+    function searchStudent() {
+        const name = document.getElementById('searchName').value;
+        fetch(`${API}/search?name=${encodeURIComponent(name)}`)
+            .then(res => res.json())
+            .then(data => {
+                let html = `<p>Tìm thấy <b>${data.length}</b> sinh viên:</p><ul>`;
+                data.forEach(sv => {
+                    html += `<li>${sv.id} - ${sv.name} - ${sv.age} tuổi - ${sv.email}</li>`;
+                });
+                html += '</ul>';
+                document.getElementById('searchResult').innerHTML = html;
+            });
+    }
+
+    // YEU CAU 10: Them moi sinh vien
+    function addStudent() {
+        const student = {
+            id:    parseInt(document.getElementById('addId').value),
+            name:  document.getElementById('addName').value,
+            age:   parseInt(document.getElementById('addAge').value),
+            email: document.getElementById('addEmail').value
+        };
+        fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(student)
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('addResult').innerHTML =
+                `<p style="color:green">✅ Đã thêm: ${data.name}</p>`;
+            loadStudents();
+        });
+    }
+
+    // YEU CAU 8: Xoa sinh vien
+    function deleteStudent(id) {
+        if (!confirm(`Bạn có chắc muốn xóa sinh viên ID ${id}?`)) return;
+        fetch(`${API}/delete/${id}`, { method: 'POST' })
+            .then(res => res.text())
+            .then(() => {
+                alert(`Đã xóa sinh viên ID ${id}`);
+                loadStudents();
+            });
+    }
+
+    // Dien thong tin vao form cap nhat
+    function fillUpdate(id, name, age, email) {
+        document.getElementById('updateId').value = id;
+        document.getElementById('updateName').value = name;
+        document.getElementById('updateAge').value = age;
+        document.getElementById('updateEmail').value = email;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // YEU CAU 9: Cap nhat sinh vien
+    function updateStudent() {
+        const id = parseInt(document.getElementById('updateId').value);
+        const student = {
+            id:    id,
+            name:  document.getElementById('updateName').value,
+            age:   parseInt(document.getElementById('updateAge').value),
+            email: document.getElementById('updateEmail').value
+        };
+        fetch(`${API}/update/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(student)
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('updateResult').innerHTML =
+                `<p style="color:blue">✅ Đã cập nhật: ${data.name}</p>`;
+            loadStudents();
+        });
+    }
+
+    // Tu dong load danh sach khi mo trang
+    window.onload = loadStudents;
+</script>
+
+</body>
+</html>
