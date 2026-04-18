@@ -183,13 +183,13 @@
     <script>
         let secModal, editModal, transferModal;
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             secModal = new bootstrap.Modal(document.getElementById('sectionDetailModal'));
             editModal = new bootstrap.Modal(document.getElementById('sectionEditModal'));
             transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
 
-            // TODO: Nạp danh sách lớp vào select filter
-            // loadClassOptions();
+            // Nạp danh sách lớp vào select filter
+            await loadClassOptions();
 
             // Đọc classId từ URL nếu có
             const params = new URLSearchParams(window.location.search);
@@ -200,12 +200,24 @@
             renderTable();
         });
 
-        // TODO: Gọi API lấy danh sách phân lớp (có thể lọc theo classId)
+        async function loadClassOptions() {
+            const res = await fetch('/api/classes');
+            const classes = await res.json();
+            const filter = document.getElementById('class-filter');
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.code} - ${c.name}`;
+                filter.appendChild(opt);
+            });
+        }
+
+        // Gọi API lấy danh sách phân lớp (có thể lọc theo classId)
         async function fetchSections(classId) {
-            // const url = classId ? `/api/student-sections?classId=${classId}` : '/api/student-sections';
-            // const res = await fetch(url);
-            // return await res.json();
-            return [];
+            if (!classId) return [];
+            const url = `/api/student-sections/class/${classId}`;
+            const res = await fetch(url);
+            return await res.json();
         }
 
         async function renderTable() {
@@ -216,19 +228,18 @@
 
             sections.forEach(sec => {
                 let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
-                let btnClass = sec.is_active ? 'btn-warning' : 'btn-outline-secondary';
                 const tr = document.createElement("tr");
                 tr.className = "clickable-row";
                 tr.onclick = () => showDetail(sec.id);
                 tr.innerHTML = `
-                    <td class="fw-bold text-primary">${sec.student_code}</td>
-                    <td>${sec.full_name}</td>
-                    <td>${sec.class_code}</td>
+                    <td class="fw-bold text-primary">${sec.studentCode}</td>
+                    <td>${sec.studentFullName}</td>
+                    <td>${document.getElementById('class-filter').options[document.getElementById('class-filter').selectedIndex].text}</td>
                     <td><span class="badge ${badge} status-badge">${sec.status}</span></td>
-                    <td>${sec.start_date}</td>
-                    <td>${sec.end_date === "NULL" ? '<span class="text-muted fst-italic">Đang học</span>' : sec.end_date}</td>
+                    <td>${sec.startDate || ''}</td>
+                    <td>${!sec.endDate ? '<span class="text-muted fst-italic">Đang học</span>' : sec.endDate}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm ${btnClass}" onclick="openEditModal(event, ${sec.id})" title="Chỉnh sửa">
+                        <button class="btn btn-sm btn-warning" onclick="event.stopPropagation();" title="Chỉnh sửa (Tính năng đang phát triển)">
                             <i class="fas fa-edit"></i>
                         </button>
                     </td>`;
@@ -236,102 +247,46 @@
             });
         }
 
-        // TODO: Gọi API lấy chi tiết 1 bản ghi phân lớp
-        async function showDetail(id) {
-            // const res = await fetch(`/api/student-sections/${id}`);
-            // const sec = await res.json();
-            const sec = null; // placeholder
-            if (!sec) return;
-
-            document.getElementById('detail-student_name').textContent = `${sec.student_code} - ${sec.full_name}`;
-            document.getElementById('detail-class_code').textContent = sec.class_code;
-            let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
-            document.getElementById('detail-status').innerHTML = `<span class="badge ${badge}">${sec.status}</span>`;
-            document.getElementById('detail-note').textContent = sec.note;
-            document.getElementById('detail-start_date').textContent = sec.start_date;
-            document.getElementById('detail-end_date').textContent = sec.end_date === "NULL" ? "Đang học..." : sec.end_date;
-            document.getElementById('detail-created_at').textContent = sec.created_at;
-            document.getElementById('detail-is_active').innerHTML = sec.is_active ? '<span class="badge bg-primary">1 - Khả dụng</span>' : '<span class="badge bg-secondary">0 - Hết hiệu lực</span>';
-
-            secModal.show();
-        }
-
-        // TODO: Gọi API lấy chi tiết để đổ vào form sửa
-        async function openEditModal(event, id) {
-            event.stopPropagation();
-
-            // const res = await fetch(`/api/student-sections/${id}`);
-            // const sec = await res.json();
-            const sec = null; // placeholder
-            if (!sec) return;
-
-            document.getElementById('edit_id').value = sec.id;
-            document.getElementById('edit_student').value = `${sec.student_code} - ${sec.full_name}`;
-            document.getElementById('edit_class').value = sec.class_code;
-            document.getElementById('edit_status').value = sec.status;
-            document.getElementById('edit_is_active').value = sec.is_active;
-            document.getElementById('edit_start_date').value = sec.start_date;
-            document.getElementById('edit_end_date').value = sec.end_date;
-            document.getElementById('edit_note').value = sec.note;
-
-            editModal.show();
-        }
-
-        // TODO: Gọi API PUT lưu chỉnh sửa phân lớp
-        async function saveEdit() {
-            const id = document.getElementById('edit_id').value;
-            const payload = {
-                status: document.getElementById('edit_status').value,
-                is_active: parseInt(document.getElementById('edit_is_active').value),
-                start_date: document.getElementById('edit_start_date').value,
-                end_date: document.getElementById('edit_end_date').value,
-                note: document.getElementById('edit_note').value,
-            };
-
-            // await fetch(`/api/student-sections/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("Cập nhật bản ghi phân lớp thành công!");
-            editModal.hide();
-            renderTable();
-        }
-
-        // TODO: Nạp danh sách SV đang học và danh sách lớp vào transfer modal
         async function openTransferModal() {
-            // const svRes = await fetch('/api/student-sections?status=studying&is_active=1');
-            // const students = await svRes.json();
-            // const selectStudent = document.getElementById('trans_student_code');
-            // selectStudent.innerHTML = '<option value="">-- Chọn sinh viên --</option>';
-            // students.forEach(s => selectStudent.innerHTML += `<option value="${s.student_code}">[${s.class_code}] ${s.student_code} - ${s.full_name}</option>`);
+            const svRes = await fetch('/api/students');
+            const students = await svRes.json();
+            const selectStudent = document.getElementById('trans_student_code');
+            selectStudent.innerHTML = '<option value="">-- Chọn sinh viên --</option>';
+            students.forEach(s => selectStudent.innerHTML += `<option value="${s.id}">${s.code} - ${s.full_name}</option>`);
 
-            // const clsRes = await fetch('/api/classes?is_active=1');
-            // const classes = await clsRes.json();
-            // const selectClass = document.getElementById('trans_new_class');
-            // selectClass.innerHTML = '<option value="">-- Chọn lớp mới --</option>';
-            // classes.forEach(c => selectClass.innerHTML += `<option value="${c.code}">${c.code} - ${c.name}</option>`);
+            const clsRes = await fetch('/api/classes');
+            const classes = await clsRes.json();
+            const selectClass = document.getElementById('trans_new_class');
+            selectClass.innerHTML = '<option value="">-- Chọn lớp mới --</option>';
+            classes.forEach(c => selectClass.innerHTML += `<option value="${c.id}">${c.code} - ${c.name}</option>`);
 
             document.getElementById('trans_note').value = "";
             transferModal.show();
         }
 
-        // TODO: Gọi API thực hiện nghiệp vụ chuyển lớp (SP_TransferStudent)
         async function submitTransfer() {
-            const studentCode = document.getElementById('trans_student_code').value;
-            const newClass = document.getElementById('trans_new_class').value;
-            const note = document.getElementById('trans_note').value;
+            const studentId = document.getElementById('trans_student_code').value;
+            const newClassId = document.getElementById('trans_new_class').value;
+            const reason = document.getElementById('trans_note').value;
 
-            if (!studentCode || !newClass) {
+            if (!studentId || !newClassId) {
                 alert("Vui lòng chọn sinh viên và lớp mới!");
                 return;
             }
 
-            // await fetch('/api/student-sections/transfer', {
-            //     method: 'POST',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify({ student_code: studentCode, new_class: newClass, note })
-            // });
+            const res = await fetch('/api/students/transfer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ studentId, newClassId, reason })
+            });
 
-            alert("Nghiệp vụ chuyển lớp hoàn tất!");
-            transferModal.hide();
-            renderTable();
+            if (res.ok) {
+                alert("Nghiệp vụ chuyển lớp hoàn tất!");
+                transferModal.hide();
+                renderTable();
+            } else {
+                alert("Lỗi khi chuyển lớp!");
+            }
         }
     </script>
 </body>

@@ -25,6 +25,7 @@ public class StudentClassSection {
     @JoinColumn(name = "student_classe_id", nullable = false)
     private StudentClass studentClass;
 
+    @Builder.Default
     @Column(name = "status", nullable = false, length = 50)
     private String status = "studying"; // studying | completed | dropped
 
@@ -37,6 +38,7 @@ public class StudentClassSection {
     @Column(name = "end_date") // NULL = đang học
     private LocalDateTime endDate;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

@@ -159,11 +159,10 @@
             renderTable();
         });
 
-        // TODO: Gọi API lấy danh sách lớp
+        // Gọi API lấy danh sách lớp
         async function fetchClasses() {
-            // const res = await fetch('/api/classes');
-            // return await res.json();
-            return [];
+            const res = await fetch('/api/classes');
+            return await res.json();
         }
 
         async function renderTable() {
@@ -178,28 +177,27 @@
                 tr.innerHTML = `
                     <td class="fw-bold text-primary">${cls.code}</td>
                     <td>${cls.name}</td>
-                    <td>${cls.department_id}</td>
-                    <td>${cls.employee_id}</td>
+                    <td>${cls.departmentName || ''}</td>
+                    <td>${cls.advisorName || ''}</td>
                     <td class="text-center">
-                        <a href="student_sections.html?classId=${cls.code}" class="btn btn-sm btn-info text-white" onclick="event.stopPropagation();" title="Xem danh sách SV"><i class="fas fa-users"></i></a>
+                        <a href="student_sections.html?classId=${cls.id}" class="btn btn-sm btn-info text-white" onclick="event.stopPropagation();" title="Xem danh sách SV"><i class="fas fa-users"></i></a>
                         <button class="btn btn-sm btn-warning" onclick="openEditModal(event, '${cls.code}')" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
                     </td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        // TODO: Gọi API lấy chi tiết 1 lớp theo code
+        // Gọi API lấy chi tiết 1 lớp theo code
         async function showDetail(code) {
-            // const res = await fetch(`/api/classes/${code}`);
-            // const cls = await res.json();
-            const cls = null; // placeholder
+            const res = await fetch(`/api/classes/${code}`);
+            const cls = await res.json();
             if (!cls) return;
 
             Object.keys(cls).forEach(key => {
                 const el = document.getElementById(`detail-${key}`);
                 if (el) {
-                    if (key === 'is_active') el.innerHTML = cls.is_active == 1 ? '<span class="badge bg-primary">1 - Hoạt động</span>' : '<span class="badge bg-secondary">0 - Khóa</span>';
-                    else el.textContent = cls[key];
+                    if (key === 'is_active') el.innerHTML = cls.is_active ? '<span class="badge bg-primary">Hoạt động</span>' : '<span class="badge bg-secondary">Khóa</span>';
+                    else el.textContent = cls[key] || '';
                 }
             });
 
@@ -214,47 +212,47 @@
         function openAddModal() {
             document.getElementById("classForm").reset();
             document.getElementById("form_mode").value = "add";
+            document.getElementById("form_id").value = "";
             document.getElementById("form_code").disabled = false;
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-chalkboard-teacher me-2"></i> Thêm mới Lớp học';
             classFormModal.show();
         }
 
-        // TODO: Gọi API lấy chi tiết để đổ vào form sửa
+        // Gọi API lấy chi tiết để đổ vào form sửa
         async function openEditModal(event, code) {
             if (event) event.stopPropagation();
 
-            // const res = await fetch(`/api/classes/${code}`);
-            // const cls = await res.json();
-            const cls = null; // placeholder
+            const res = await fetch(`/api/classes/${code}`);
+            const cls = await res.json();
             if (!cls) return;
 
             document.getElementById("form_mode").value = "edit";
-            currentEditingCode = code;
+            document.getElementById("form_id").value = cls.id;
             document.getElementById("form_code").value = cls.code;
             document.getElementById("form_code").disabled = true;
             document.getElementById("form_name").value = cls.name;
-            document.getElementById("form_academic_year_id").value = cls.academic_year_id;
-            document.getElementById("form_department_id").value = cls.department_id;
-            document.getElementById("form_major_id").value = cls.major_id;
-            document.getElementById("form_training_program_id").value = cls.training_program_id;
-            document.getElementById("form_employee_id").value = cls.employee_id;
-            document.getElementById("form_is_active").value = cls.is_active;
+            document.getElementById("form_academic_year_id").value = cls.academicYearId || '';
+            document.getElementById("form_department_id").value = cls.departmentId || '';
+            document.getElementById("form_major_id").value = cls.majorId || '';
+            document.getElementById("form_training_program_id").value = cls.trainingProgramId || '';
+            document.getElementById("form_employee_id").value = cls.employeeId || '';
+            document.getElementById("form_is_active").value = cls.is_active ? "1" : "0";
 
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-edit me-2"></i> Chỉnh sửa Lớp học';
             classFormModal.show();
         }
 
-        // TODO: Gọi API POST/PUT lưu lớp
+        // Gọi API POST/PUT lưu lớp
         async function saveClass() {
+            const id = document.getElementById("form_id").value;
             const newData = {
                 code: document.getElementById("form_code").value.trim(),
                 name: document.getElementById("form_name").value.trim(),
-                academic_year_id: document.getElementById("form_academic_year_id").value,
-                department_id: document.getElementById("form_department_id").value,
-                major_id: document.getElementById("form_major_id").value,
-                training_program_id: document.getElementById("form_training_program_id").value,
-                employee_id: document.getElementById("form_employee_id").value,
-                is_active: parseInt(document.getElementById("form_is_active").value),
+                academicYearId: document.getElementById("form_academic_year_id").value || null,
+                departmentId: document.getElementById("form_department_id").value || null,
+                majorId: document.getElementById("form_major_id").value || null,
+                trainingProgramId: document.getElementById("form_training_program_id").value || null,
+                employeeId: document.getElementById("form_employee_id").value || null
             };
 
             if (!newData.code || !newData.name) {
@@ -263,17 +261,23 @@
             }
 
             const mode = document.getElementById("form_mode").value;
+            const url = mode === "add" ? '/api/classes' : `/api/classes/${id}`;
+            const method = mode === "add" ? 'POST' : 'PUT';
 
-            if (mode === "add") {
-                // await fetch('/api/classes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(newData) });
-                alert("Thêm Lớp học thành công!");
+            const res = await fetch(url, { 
+                method: method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(newData) 
+            });
+
+            if (res.ok) {
+                alert(mode === "add" ? "Thêm Lớp học thành công!" : "Cập nhật Lớp học thành công!");
+                classFormModal.hide();
+                renderTable();
             } else {
-                // await fetch(`/api/classes/${currentEditingCode}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(newData) });
-                alert("Cập nhật Lớp học thành công!");
+                const err = await res.json();
+                alert("Lỗi: " + (err.message || "Không thể lưu dữ liệu"));
             }
-
-            classFormModal.hide();
-            renderTable();
         }
     </script>
 </body>

@@ -69,12 +69,14 @@ public class Student {
     @JoinColumn(name = "student_classe_id")
     private StudentClass studentClass;
 
+    @Builder.Default
     @Column(name = "status", nullable = false, length = 50)
     private String status = "studying"; // studying | reserved | dropout | graduated
 
     @Column(name = "admission_year")
     private LocalDateTime admissionYear;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

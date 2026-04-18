@@ -1,5 +1,4 @@
-// dto/studentclasse/StudentClassListDTO.java
-package com.example.demo.dto.studentclasse;
+package com.example.demo.dto.studentclass;
 
 import lombok.Data;
 import java.util.UUID;

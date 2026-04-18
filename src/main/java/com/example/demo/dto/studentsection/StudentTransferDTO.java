@@ -1,10 +1,10 @@
-// dto/studentsection/StudentTransferDTO.java
 package com.example.demo.dto.studentsection;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import java.util.UUID;
 
-@Data
+@Getter @Setter
 public class StudentTransferDTO {
     private UUID studentId;
     private UUID newClassId;

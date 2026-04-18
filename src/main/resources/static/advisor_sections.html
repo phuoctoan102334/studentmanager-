@@ -366,20 +366,18 @@
             endAdvisorModal.show();
         }
 
-        // TODO: Gọi API PATCH/PUT để kết thúc nhiệm kỳ
+        // Gọi API PATCH/PUT để kết thúc nhiệm kỳ
         async function confirmEndAdvisor() {
             const id = document.getElementById('end_id').value;
-            const endDate = document.getElementById('end_date_input').value;
+            const res = await fetch(`/api/advisor-sections/end/${id}`, { method: 'PUT' });
 
-            // await fetch(`/api/advisor-sections/${id}/end`, {
-            //     method: 'PATCH',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify({ end_date: endDate, is_active: 0 })
-            // });
-
-            alert("Đã kết thúc nhiệm kỳ cố vấn thành công!");
-            endAdvisorModal.hide();
-            renderTable();
+            if (res.ok) {
+                alert("Đã kết thúc nhiệm kỳ cố vấn thành công!");
+                endAdvisorModal.hide();
+                renderTable();
+            } else {
+                alert("Lỗi khi kết thúc nhiệm kỳ!");
+            }
         }
     </script>
 </body>

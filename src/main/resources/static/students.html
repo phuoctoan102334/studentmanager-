@@ -217,11 +217,10 @@
             renderTable();
         });
 
-        // TODO: Gọi API lấy danh sách sinh viên
+        // Gọi API lấy danh sách sinh viên
         async function fetchStudents() {
-            // const res = await fetch('/api/students');
-            // return await res.json();
-            return [];
+            const res = await fetch('/api/students');
+            return await res.json();
         }
 
         async function renderTable() {
@@ -242,8 +241,8 @@
                 tr.innerHTML = `
                     <td class="ps-4">${student.code}</td>
                     <td class="text-primary fw-medium">${student.full_name}</td>
-                    <td>${student.date_of_birth}</td>
-                    <td>${student.student_classe_id}</td>
+                    <td>${student.date_of_birth || ''}</td>
+                    <td>${student.studentClassName || ''}</td>
                     <td><span class="badge ${badgeClass}">${student.status}</span></td>
                     <td class="text-center">
                         <button class="btn btn-warning btn-action text-dark border-0"
@@ -255,11 +254,10 @@
             });
         }
 
-        // TODO: Gọi API lấy chi tiết 1 sinh viên
+        // Gọi API lấy chi tiết 1 sinh viên
         async function showDetail(studentCode) {
-            // const res = await fetch(`/api/students/${studentCode}`);
-            // const student = await res.json();
-            const student = null; // placeholder
+            const res = await fetch(`/api/students/${studentCode}`);
+            const student = await res.json();
             if (!student) return;
 
             Object.keys(student).forEach(key => {
@@ -269,9 +267,9 @@
                         let bClass = student.status === "reserved" ? "bg-secondary" : student.status === "dropout" ? "bg-danger" : student.status === "graduated" ? "bg-info text-dark" : "bg-success";
                         element.innerHTML = `<span class="badge ${bClass}">${student.status}</span>`;
                     } else if (key === 'is_active') {
-                        element.innerHTML = student.is_active == 1 ? `<span class="badge bg-primary">1 - Hoạt động</span>` : `<span class="badge bg-secondary">0 - Khóa</span>`;
+                        element.innerHTML = student.is_active ? `<span class="badge bg-primary">Hoạt động</span>` : `<span class="badge bg-secondary">Khóa</span>`;
                     } else {
-                        element.textContent = student[key];
+                        element.textContent = student[key] || '';
                     }
                 }
             });
@@ -287,63 +285,64 @@
         function openAddModal() {
             document.getElementById("studentForm").reset();
             document.getElementById("form_mode").value = "add";
+            document.getElementById("form_id").value = "";
             document.getElementById("form_code").disabled = false;
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-user-plus me-2"></i> Thêm mới Sinh viên';
             formModal.show();
         }
 
-        // TODO: Gọi API lấy chi tiết để đổ vào form sửa
+        // Gọi API lấy chi tiết để đổ vào form sửa
         async function openEditModal(event, studentCode) {
             if (event) event.stopPropagation();
 
-            // const res = await fetch(`/api/students/${studentCode}`);
-            // const student = await res.json();
-            const student = null; // placeholder
+            const res = await fetch(`/api/students/${studentCode}`);
+            const student = await res.json();
             if (!student) return;
 
             document.getElementById("form_mode").value = "edit";
-            currentEditingCode = studentCode;
+            document.getElementById("form_id").value = student.id;
             document.getElementById("form_code").value = student.code;
             document.getElementById("form_code").disabled = true;
             document.getElementById("form_full_name").value = student.full_name;
-            document.getElementById("form_date_of_birth").value = student.date_of_birth;
-            document.getElementById("form_gender").value = student.gender;
-            document.getElementById("form_personal_identification_number").value = student.personal_identification_number;
-            document.getElementById("form_date_of_issue").value = student.date_of_issue;
-            document.getElementById("form_card_place").value = student.card_place;
-            document.getElementById("form_address").value = student.address;
-            document.getElementById("form_current_address").value = student.current_address;
+            document.getElementById("form_date_of_birth").value = student.date_of_birth || '';
+            document.getElementById("form_gender").value = student.gender || '';
+            document.getElementById("form_personal_identification_number").value = student.personal_identification_number || '';
+            document.getElementById("form_date_of_issue").value = student.date_of_issue || '';
+            document.getElementById("form_card_place").value = student.card_place || '';
+            document.getElementById("form_address").value = student.address || '';
+            document.getElementById("form_current_address").value = student.current_address || '';
             document.getElementById("form_status").value = student.status;
-            document.getElementById("form_student_classe_id").value = student.student_classe_id;
-            document.getElementById("form_academic_year_id").value = student.academic_year_id;
-            document.getElementById("form_admission_year").value = student.admission_year;
-            document.getElementById("form_department_id").value = student.department_id;
-            document.getElementById("form_major_id").value = student.major_id;
-            document.getElementById("form_training_program_id").value = student.training_program_id;
+            document.getElementById("form_student_classe_id").value = student.studentClasseId || '';
+            document.getElementById("form_academic_year_id").value = student.academicYearId || '';
+            document.getElementById("form_admission_year").value = student.admissionYear || '';
+            document.getElementById("form_department_id").value = student.departmentId || '';
+            document.getElementById("form_major_id").value = student.majorId || '';
+            document.getElementById("form_training_program_id").value = student.trainingProgramId || '';
 
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-user-edit me-2"></i> Chỉnh sửa Sinh viên';
             formModal.show();
         }
 
-        // TODO: Gọi API POST/PUT lưu sinh viên
+        // Gọi API POST/PUT lưu sinh viên
         async function saveStudent() {
+            const id = document.getElementById("form_id").value;
             const newData = {
                 code: document.getElementById("form_code").value.trim(),
                 full_name: document.getElementById("form_full_name").value.trim(),
-                date_of_birth: document.getElementById("form_date_of_birth").value,
+                date_of_birth: document.getElementById("form_date_of_birth").value || null,
                 gender: document.getElementById("form_gender").value,
                 personal_identification_number: document.getElementById("form_personal_identification_number").value,
-                date_of_issue: document.getElementById("form_date_of_issue").value,
+                date_of_issue: document.getElementById("form_date_of_issue").value || null,
                 card_place: document.getElementById("form_card_place").value,
                 address: document.getElementById("form_address").value,
                 current_address: document.getElementById("form_current_address").value,
                 status: document.getElementById("form_status").value,
-                student_classe_id: document.getElementById("form_student_classe_id").value,
-                academic_year_id: document.getElementById("form_academic_year_id").value,
-                admission_year: document.getElementById("form_admission_year").value,
-                department_id: document.getElementById("form_department_id").value,
-                major_id: document.getElementById("form_major_id").value,
-                training_program_id: document.getElementById("form_training_program_id").value,
+                studentClasseId: document.getElementById("form_student_classe_id").value || null,
+                academicYearId: document.getElementById("form_academic_year_id").value || null,
+                admissionYear: document.getElementById("form_admission_year").value || null,
+                departmentId: document.getElementById("form_department_id").value || null,
+                majorId: document.getElementById("form_major_id").value || null,
+                trainingProgramId: document.getElementById("form_training_program_id").value || null,
             };
 
             if (!newData.code || !newData.full_name) {
@@ -352,17 +351,23 @@
             }
 
             const mode = document.getElementById("form_mode").value;
+            const url = mode === "add" ? '/api/students' : `/api/students/${id}`;
+            const method = mode === "add" ? 'POST' : 'PUT';
 
-            if (mode === "add") {
-                // await fetch('/api/students', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(newData) });
-                alert("Thêm sinh viên thành công!");
+            const res = await fetch(url, { 
+                method: method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(newData) 
+            });
+
+            if (res.ok) {
+                alert(mode === "add" ? "Thêm sinh viên thành công!" : "Cập nhật sinh viên thành công!");
+                formModal.hide();
+                renderTable();
             } else {
-                // await fetch(`/api/students/${currentEditingCode}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(newData) });
-                alert("Cập nhật sinh viên thành công!");
+                const err = await res.json();
+                alert("Lỗi: " + (err.message || "Không thể lưu dữ liệu"));
             }
-
-            formModal.hide();
-            renderTable();
         }
     </script>
 </body>

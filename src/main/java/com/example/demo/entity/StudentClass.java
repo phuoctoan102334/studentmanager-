@@ -43,6 +43,7 @@ public class StudentClass {
     @JoinColumn(name = "employee_id")
     private Employee employee; // Cố vấn học tập mặc định
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

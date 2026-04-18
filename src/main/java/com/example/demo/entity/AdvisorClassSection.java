@@ -31,6 +31,7 @@ public class AdvisorClassSection {
     @Column(name = "end_date") // NULL = đang phụ trách
     private LocalDateTime endDate;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

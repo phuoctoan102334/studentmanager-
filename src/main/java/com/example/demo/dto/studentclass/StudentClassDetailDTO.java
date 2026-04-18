@@ -1,7 +1,7 @@
-// dto/studentclasse/StudentClassDetailDTO.java
-package com.example.demo.dto.studentclasse;
+package com.example.demo.dto.studentclass;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -18,6 +18,9 @@ public class StudentClassDetailDTO {
     private UUID trainingProgramId;
     private String trainingProgramName;
     private UUID employeeId;
+    private String employeeName;
     private String advisorName;
     private Boolean isActive;
+    private LocalDateTime createdAt;
+    private UUID createdBy;
 }

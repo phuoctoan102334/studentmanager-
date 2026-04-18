@@ -1,4 +1,3 @@
-// AdvisorClassSectionRepository.java
 package com.example.demo.repository;
 
 import com.example.demo.entity.AdvisorClassSection;
@@ -11,11 +10,11 @@ import java.util.UUID;
 
 @Repository
 public interface AdvisorClassSectionRepository extends JpaRepository<AdvisorClassSection, UUID> {
-
-    // Phân công đang active (chưa kết thúc)
+    
+    // Bản ghi đang phụ trách (end_date is null)
     Optional<AdvisorClassSection> findByStudentClass_IdAndIsActiveTrueAndEndDateIsNull(UUID classId);
 
-    List<AdvisorClassSection> findByEmployee_IdOrderByStartDateDesc(UUID employeeId);
+    List<AdvisorClassSection> findByStudentClass_IdOrderByStartDateDesc(UUID classId);
 
-    List<AdvisorClassSection> findByIsActiveTrueAndEndDateIsNull();
+    List<AdvisorClassSection> findByEmployee_IdAndIsActiveTrue(UUID employeeId);
 }

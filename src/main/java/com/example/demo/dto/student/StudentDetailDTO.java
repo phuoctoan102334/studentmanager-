@@ -1,4 +1,3 @@
-// dto/student/StudentDetailDTO.java
 package com.example.demo.dto.student;
 
 import lombok.Data;
@@ -21,7 +20,7 @@ public class StudentDetailDTO {
     private String status;
     private LocalDateTime admissionYear;
     private Boolean isActive;
-    // FK hiển thị tên
+    
     private UUID departmentId;
     private String departmentName;
     private UUID majorId;
@@ -30,4 +29,6 @@ public class StudentDetailDTO {
     private String academicYear;
     private UUID studentClasseId;
     private String studentClassName;
+    private UUID trainingProgramId;
+    private String trainingProgramName;
 }
