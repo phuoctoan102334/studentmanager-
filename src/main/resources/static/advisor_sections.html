@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân công Cố vấn - QLĐT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; }
+        .sidebar { height: 100vh; background-color: #343a40; color: white; padding-top: 20px; position: fixed; width: 250px; z-index: 100; }
+        .sidebar a { color: #c2c7d0; text-decoration: none; padding: 12px 20px; display: block; transition: 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background-color: #007bff; color: white; border-left: 4px solid #fff; padding-left: 16px;}
+        .sidebar a i { width: 25px; }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .admin-card { border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); background-color: #ffffff; }
+        .admin-card-header { background-color: #ffffff; border-bottom: 1px solid #f1f5f9; border-radius: 12px 12px 0 0 !important; padding: 1.25rem 1.5rem; }
+        .table-modern { margin-bottom: 0; }
+        .table-modern thead th { background-color: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; border-bottom: 1px solid #e2e8f0; border-top: none; padding: 1rem 1.5rem; }
+        .table-modern tbody td { padding: 1rem 1.5rem; vertical-align: middle; color: #334155; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .clickable-row { cursor: pointer; transition: background-color 0.2s ease; }
+        .clickable-row:hover { background-color: #f8fafc !important; }
+        .class-code-badge { background-color: #eff6ff; color: #2563eb; font-weight: 600; padding: 0.4em 0.8em; border-radius: 6px; font-size: 0.85rem; }
+        .status-active { background-color: #dcfce7; color: #166534; font-weight: 600; padding: 0.3em 0.6em; border-radius: 4px; font-size: 0.75rem; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 4px;}
+        .status-ended { color: #64748b; font-weight: 500; font-size: 0.85rem; }
+        .avatar-sm { width: 32px; height: 32px; border-radius: 50%; background-color: #e2e8f0; display: inline-flex; align-items: center; justify-content: center; color: #475569; font-weight: bold; font-size: 0.85rem; margin-right: 8px; }
+        .search-wrapper { position: relative; width: 350px; }
+        .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .search-wrapper input { padding-left: 35px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: none; }
+        .search-wrapper input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .btn-icon-text { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; border-radius: 8px; padding: 0.4rem 1rem; transition: all 0.2s; }
+        .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 0; transition: all 0.2s; }
+        .detail-group-title { font-size: 0.9rem; font-weight: bold; color: #007bff; border-bottom: 1px solid #e9ecef; padding-bottom: 5px; margin-bottom: 15px; margin-top: 20px; text-transform: uppercase;}
+        .detail-label { font-size: 0.8rem; color: #6c757d; margin-bottom: 2px; display: block; }
+        .detail-value { font-size: 0.95rem; font-weight: 500; color: #212529; margin-bottom: 15px; word-wrap: break-word;}
+        .modal-header-custom { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h4 class="text-center mb-4 text-white"><i class="fas fa-university"></i> QL Đào Tạo</h4>
+        <a href="students.html"><i class="fas fa-user-graduate"></i> Hồ sơ Sinh viên</a>
+        <a href="classes.html"><i class="fas fa-chalkboard"></i> Lớp Hành chính</a>
+        <a href="student_sections.html"><i class="fas fa-users"></i> Phân lớp Sinh viên</a>
+        <a href="advisor_sections.html" class="active"><i class="fas fa-chalkboard-teacher"></i> Phân công Cố vấn</a>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 mb-0 text-gray-800 fw-bold">Quản lý Phân công Cố vấn học tập</h2>
+        </div>
+        <div class="card admin-card">
+            <div class="admin-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control form-control-sm" id="search-input" placeholder="Tìm theo tên CVHT, mã lớp..." oninput="renderTable()">
+                </div>
+                <button class="btn btn-primary btn-icon-text btn-sm" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Tạo Phân công mới
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-modern table-hover">
+                    <thead>
+                        <tr>
+                            <th width="20%">Lớp (student_classe_id)</th>
+                            <th width="35%">Cố vấn (employee_id)</th>
+                            <th width="15%">Từ ngày</th>
+                            <th width="15%">Đến ngày</th>
+                            <th width="15%" class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="advisor-table-body"></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center rounded-bottom-4">
+                <span class="text-muted small">Hiển thị <span id="current-count">0</span> trong tổng số <span id="total-count">0</span> phân công</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chi tiết -->
+    <div class="modal fade" id="advisorDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title"><i class="fas fa-user-tie me-2"></i> Chi tiết Phân công CVHT</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h6 class="detail-group-title mt-0"><i class="fas fa-info-circle me-2"></i> Thông tin Phân công</h6>
+                        <div class="row">
+                            <div class="col-md-6"><span class="detail-label">Cố vấn học tập (employee_id)</span><div class="detail-value text-primary fw-bold" id="detail-employee_name"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Lớp hành chính (student_classe_id)</span><div class="detail-value fw-bold" id="detail-student_classe_id"></div></div>
+                        </div>
+                        <h6 class="detail-group-title"><i class="fas fa-calendar-alt me-2"></i> Thời gian phụ trách</h6>
+                        <div class="row">
+                            <div class="col-md-6"><span class="detail-label">Bắt đầu phụ trách lớp (start_date)</span><div class="detail-value fw-bold text-success" id="detail-start_date"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Kết thúc (end_date)</span><div class="detail-value" id="detail-end_date"></div></div>
+                        </div>
+                        <h6 class="detail-group-title"><i class="fas fa-server me-2"></i> Lịch sử Hệ thống</h6>
+                        <div class="row">
+                            <div class="col-md-4"><span class="detail-label">Trạng thái hiệu lực (is_active)</span><div class="detail-value" id="detail-is_active"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Thời điểm tạo (created_at)</span><div class="detail-value" id="detail-created_at"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Người tạo (created_by)</span><div class="detail-value font-monospace text-muted" style="font-size: 0.8rem;" id="detail-created_by"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Thời điểm cập nhật (updated_at)</span><div class="detail-value" id="detail-updated_at"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Người cập nhật (updated_by)</span><div class="detail-value font-monospace text-muted" style="font-size: 0.8rem;" id="detail-updated_by"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <input type="hidden" id="detail-active-id">
+                    <button type="button" class="btn btn-danger" id="modal-btn-end" onclick="triggerEndFromDetail()"><i class="fas fa-power-off"></i> Kết thúc phân công</button>
+                    <button type="button" class="btn btn-warning" onclick="triggerEditFromDetail()"><i class="fas fa-edit"></i> Chỉnh sửa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa -->
+    <div class="modal fade" id="advisorFormModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="formModalTitle"><i class="fas fa-plus me-2"></i> Tạo Phân công mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="advisorForm" class="row g-3">
+                        <input type="hidden" id="form_mode" value="add">
+                        <input type="hidden" id="form_id">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Cố vấn học tập (employee_id) *</label>
+                            <input type="text" class="form-control" id="form_employee" required placeholder="VD: ThS. Trần B">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Lớp hành chính (student_classe_id) *</label>
+                            <input type="text" class="form-control" id="form_class" required placeholder="VD: CNTT-K20A">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Từ ngày (start_date) *</label>
+                            <input type="text" class="form-control" id="form_start_date" placeholder="DD/MM/YYYY">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Đến ngày (end_date)</label>
+                            <input type="text" class="form-control" id="form_end_date" placeholder="DD/MM/YYYY hoặc NULL">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Hiệu lực (is_active) *</label>
+                            <select class="form-select" id="form_is_active">
+                                <option value="1">1 - Hoạt động</option>
+                                <option value="0">0 - Đã kết thúc/Khóa</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAdvisor()"><i class="fas fa-save"></i> Lưu phân công</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Kết thúc nhiệm kỳ -->
+    <div class="modal fade" id="endAdvisorModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-power-off me-2"></i> Kết thúc nhiệm kỳ Cố vấn</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="alert alert-warning py-2 small">
+                        <i class="fas fa-exclamation-triangle"></i> Bạn đang thực hiện khép lại nhiệm kỳ cố vấn cho lớp học này. Trạng thái sẽ chuyển thành <strong>Đã kết thúc</strong>.
+                    </div>
+                    <input type="hidden" id="end_id">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ngày kết thúc (end_date) *</label>
+                        <input type="text" class="form-control" id="end_date_input" placeholder="DD/MM/YYYY">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmEndAdvisor()"><i class="fas fa-check"></i> Xác nhận kết thúc</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let advisorDetailModal, advisorFormModal, endAdvisorModal;
+        let allData = []; // cache dữ liệu từ API để search client-side
+
+        document.addEventListener("DOMContentLoaded", function () {
+            advisorDetailModal = new bootstrap.Modal(document.getElementById('advisorDetailModal'));
+            advisorFormModal = new bootstrap.Modal(document.getElementById('advisorFormModal'));
+            endAdvisorModal = new bootstrap.Modal(document.getElementById('endAdvisorModal'));
+            renderTable();
+        });
+
+        function getAvatarInitials(name) {
+            let parts = name.split(" ");
+            return parts[parts.length - 1].charAt(0).toUpperCase();
+        }
+
+        // TODO: Gọi API lấy danh sách phân công
+        async function fetchAdvisors() {
+            // const res = await fetch('/api/advisor-sections');
+            // return await res.json();
+            return [];
+        }
+
+        async function renderTable() {
+            allData = await fetchAdvisors();
+
+            const keyword = (document.getElementById('search-input')?.value || "").toLowerCase();
+            const filtered = keyword
+                ? allData.filter(a => a.employee_name.toLowerCase().includes(keyword) || a.student_classe_id.toLowerCase().includes(keyword))
+                : allData;
+
+            const tableBody = document.getElementById("advisor-table-body");
+            tableBody.innerHTML = "";
+
+            filtered.forEach(adv => {
+                const tr = document.createElement("tr");
+                tr.className = "clickable-row";
+                tr.onclick = () => showDetail(adv.id);
+
+                let isEnded = adv.end_date !== "NULL" || adv.is_active === 0;
+                let avatarChar = getAvatarInitials(adv.employee_name);
+                let avatarClass = isEnded ? "bg-secondary bg-opacity-10 text-secondary" : "bg-primary bg-opacity-10 text-primary";
+                let textClass = isEnded ? "fw-medium text-secondary" : "fw-bold text-dark";
+                let endDateUI = isEnded
+                    ? `<span class="status-ended">${adv.end_date}</span>`
+                    : `<span class="status-active"><span class="spinner-grow spinner-grow-sm text-success" style="width:8px;height:8px;"></span> Đang phụ trách</span>`;
+
+                let actionButtonsHtml = !isEnded
+                    ? `<button class="btn btn-light btn-action text-warning border" onclick="openEditModal(event,${adv.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+                       <button class="btn btn-light btn-action text-danger border" onclick="openEndModal(event,${adv.id})" title="Kết thúc phân công"><i class="fas fa-power-off"></i></button>`
+                    : `<button class="btn btn-light btn-action text-secondary border" onclick="openEditModal(event,${adv.id})" title="Chỉnh sửa (Lịch sử)"><i class="fas fa-edit"></i></button>
+                       <button class="btn btn-light btn-action text-secondary border disabled" onclick="event.stopPropagation();" title="Đã khóa"><i class="fas fa-lock"></i></button>`;
+
+                tr.innerHTML = `
+                    <td><span class="class-code-badge">${adv.student_classe_id}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm ${avatarClass}">${avatarChar}</div>
+                            <span class="${textClass}">${adv.employee_name}</span>
+                        </div>
+                    </td>
+                    <td class="fw-medium">${adv.start_date}</td>
+                    <td>${endDateUI}</td>
+                    <td class="text-end"><div class="d-flex justify-content-end gap-1">${actionButtonsHtml}</div></td>`;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById('current-count').textContent = filtered.length;
+            document.getElementById('total-count').textContent = allData.length;
+        }
+
+        // TODO: Gọi API lấy chi tiết 1 phân công
+        async function showDetail(id) {
+            // const res = await fetch(`/api/advisor-sections/${id}`);
+            // const adv = await res.json();
+            const adv = null; // placeholder
+            if (!adv) return;
+
+            document.getElementById('detail-active-id').value = id;
+            document.getElementById('detail-employee_name').textContent = adv.employee_name;
+            document.getElementById('detail-student_classe_id').textContent = adv.student_classe_id;
+            document.getElementById('detail-start_date').textContent = adv.start_date;
+
+            let isEnded = adv.end_date !== "NULL" || adv.is_active === 0;
+            document.getElementById('detail-end_date').innerHTML = isEnded
+                ? `<span class="fw-bold">${adv.end_date}</span>`
+                : `<span class="text-muted fst-italic">NULL (Vẫn đang phụ trách)</span>`;
+            document.getElementById('detail-is_active').innerHTML = adv.is_active === 1
+                ? `<span class="badge bg-primary">1 - Hoạt động</span>`
+                : `<span class="badge bg-secondary">0 - Đã kết thúc/Khóa</span>`;
+            document.getElementById('detail-created_at').textContent = adv.created_at;
+            document.getElementById('detail-created_by').textContent = adv.created_by;
+            document.getElementById('detail-updated_at').textContent = adv.updated_at;
+            document.getElementById('detail-updated_by').textContent = adv.updated_by || '';
+
+            document.getElementById('modal-btn-end').style.display = isEnded ? "none" : "inline-block";
+
+            advisorDetailModal.show();
+        }
+
+        function triggerEditFromDetail() {
+            advisorDetailModal.hide();
+            openEditModal(null, parseInt(document.getElementById('detail-active-id').value));
+        }
+
+        function triggerEndFromDetail() {
+            advisorDetailModal.hide();
+            openEndModal(null, parseInt(document.getElementById('detail-active-id').value));
+        }
+
+        function openAddModal() {
+            document.getElementById("advisorForm").reset();
+            document.getElementById("form_mode").value = "add";
+            document.getElementById("form_end_date").value = "NULL";
+            document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-plus me-2"></i> Tạo Phân công mới';
+            advisorFormModal.show();
+        }
+
+        // TODO: Gọi API lấy chi tiết để đổ vào form sửa
+        async function openEditModal(event, id) {
+            if (event) event.stopPropagation();
+
+            // const res = await fetch(`/api/advisor-sections/${id}`);
+            // const adv = await res.json();
+            const adv = null; // placeholder
+            if (!adv) return;
+
+            document.getElementById("form_mode").value = "edit";
+            document.getElementById("form_id").value = id;
+            document.getElementById("form_employee").value = adv.employee_name;
+            document.getElementById("form_class").value = adv.student_classe_id;
+            document.getElementById("form_start_date").value = adv.start_date;
+            document.getElementById("form_end_date").value = adv.end_date;
+            document.getElementById("form_is_active").value = adv.is_active;
+
+            document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-edit me-2"></i> Chỉnh sửa Phân công';
+            advisorFormModal.show();
+        }
+
+        // TODO: Gọi API POST/PUT lưu phân công
+        async function saveAdvisor() {
+            const payload = {
+                employee_name: document.getElementById("form_employee").value.trim(),
+                student_classe_id: document.getElementById("form_class").value.trim(),
+                start_date: document.getElementById("form_start_date").value.trim(),
+                end_date: document.getElementById("form_end_date").value.trim(),
+                is_active: parseInt(document.getElementById("form_is_active").value),
+            };
+
+            if (!payload.employee_name || !payload.student_classe_id || !payload.start_date) {
+                alert("Vui lòng điền đủ các trường bắt buộc (*)");
+                return;
+            }
+
+            const mode = document.getElementById("form_mode").value;
+            if (mode === "add") {
+                // await fetch('/api/advisor-sections', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                alert("Đã tạo phân công mới thành công!");
+            } else {
+                const id = document.getElementById("form_id").value;
+                // await fetch(`/api/advisor-sections/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                alert("Cập nhật phân công thành công!");
+            }
+
+            advisorFormModal.hide();
+            renderTable();
+        }
+
+        function openEndModal(event, id) {
+            if (event) event.stopPropagation();
+            document.getElementById('end_id').value = id;
+            document.getElementById('end_date_input').value = new Date().toLocaleDateString('en-GB');
+            endAdvisorModal.show();
+        }
+
+        // TODO: Gọi API PATCH/PUT để kết thúc nhiệm kỳ
+        async function confirmEndAdvisor() {
+            const id = document.getElementById('end_id').value;
+            const endDate = document.getElementById('end_date_input').value;
+
+            // await fetch(`/api/advisor-sections/${id}/end`, {
+            //     method: 'PATCH',
+            //     headers: {'Content-Type': 'application/json'},
+            //     body: JSON.stringify({ end_date: endDate, is_active: 0 })
+            // });
+
+            alert("Đã kết thúc nhiệm kỳ cố vấn thành công!");
+            endAdvisorModal.hide();
+            renderTable();
+        }
+    </script>
+</body>
+</html>
