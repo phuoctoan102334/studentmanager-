@@ -24,6 +24,9 @@
         .detail-label { font-size: 0.8rem; color: #6c757d; margin-bottom: 2px; display: block; }
         .detail-value { font-size: 0.95rem; font-weight: 500; color: #212529; margin-bottom: 15px; word-wrap: break-word;}
         .modal-header-custom { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+        .form-label { font-weight: bold; }
+        .invalid-feedback { font-size: 0.8rem; }
+        #form_code { text-transform: uppercase; font-family: monospace; font-weight: bold; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -88,12 +91,12 @@
                         <h6 class="detail-group-title"><i class="fas fa-graduation-cap me-2"></i> Thông tin Đào tạo</h6>
                         <div class="row">
                             <div class="col-md-3"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-student_classe_id"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academic_year_id"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academicYearName"></div></div>
                             <div class="col-md-3"><span class="detail-label">Ngày nhập học</span><div class="detail-value" id="detail-admission_year"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Khoa (department)</span><div class="detail-value" id="detail-department_id"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Ngành (major)</span><div class="detail-value" id="detail-major_id"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Chương trình</span><div class="detail-value" id="detail-training_program_id"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Khoa (department)</span><div class="detail-value" id="detail-departmentName"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Ngành (major)</span><div class="detail-value" id="detail-majorName"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Chương trình</span><div class="detail-value" id="detail-trainingProgramName"></div></div>
                         </div>
                     </div>
                 </div>
@@ -114,57 +117,70 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
-                    <form id="studentForm" class="row g-3 p-2">
+                    <form id="studentForm" class="row g-3 p-2 needs-validation" novalidate>
                         <input type="hidden" id="form_mode" value="add">
+                        <input type="hidden" id="form_id">
 
                         <h6 class="detail-group-title mt-0 w-100">Thông tin cơ bản</h6>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Mã SV *</label>
-                            <input type="text" class="form-control" id="form_code" required placeholder="VD: CNTT0123">
+                            <label class="form-label" for="form_code">Mã SV *</label>
+                            <input type="text" class="form-control" id="form_code" required 
+                                   pattern="[A-Za-z0-9]+" placeholder="VD: CNTT0123"
+                                   oninput="this.value = this.value.toUpperCase()">
+                            <div class="invalid-feedback">Bắt buộc: Mã SV (chữ và số).</div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Họ và Tên *</label>
-                            <input type="text" class="form-control" id="form_full_name" required>
+                            <label class="form-label" for="form_full_name">Họ và Tên *</label>
+                            <input type="text" class="form-control" id="form_full_name" required 
+                                   placeholder="VD: Nguyễn Văn A">
+                            <div class="invalid-feedback">Bắt buộc: Nhập Họ và Tên.</div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Ngày sinh</label>
-                            <input type="text" class="form-control" id="form_date_of_birth" placeholder="DD/MM/YYYY">
+                            <label class="form-label" for="form_date_of_birth">Ngày sinh *</label>
+                            <input type="date" class="form-control" id="form_date_of_birth" 
+                                   max="2012-12-31" required>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Ngày sinh.</div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Giới tính</label>
-                            <select class="form-select" id="form_gender">
+                            <label class="form-label" for="form_gender">Giới tính *</label>
+                            <select class="form-select" id="form_gender" required>
+                                <option value="">-- Chọn --</option>
                                 <option value="1 - Nam">Nam</option>
                                 <option value="2 - Nữ">Nữ</option>
                                 <option value="0 - Khác">Khác</option>
                             </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Giới tính.</div>
                         </div>
 
                         <h6 class="detail-group-title w-100">Giấy tờ & Cư trú</h6>
                         <div class="col-md-4">
-                            <label class="form-label">Số CCCD</label>
-                            <input type="text" class="form-control" id="form_personal_identification_number">
+                            <label class="form-label" for="form_personal_identification_number">Số CCCD *</label>
+                            <input type="text" class="form-control" id="form_personal_identification_number" 
+                                   pattern="[0-9]{9,12}" inputmode="numeric" placeholder="9 hoặc 12 số" required>
+                            <div class="invalid-feedback">Bắt buộc: Nhập Số CCCD.</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Ngày cấp</label>
-                            <input type="text" class="form-control" id="form_date_of_issue" placeholder="DD/MM/YYYY">
+                            <label class="form-label" for="form_date_of_issue">Ngày cấp *</label>
+                            <input type="date" class="form-control" id="form_date_of_issue" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Nơi cấp</label>
-                            <input type="text" class="form-control" id="form_card_place">
+                            <label class="form-label" for="form_card_place">Nơi cấp *</label>
+                            <input type="text" class="form-control" id="form_card_place" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Địa chỉ Thường trú</label>
-                            <input type="text" class="form-control" id="form_address">
+                            <label class="form-label" for="form_address">Địa chỉ Thường trú *</label>
+                            <input type="text" class="form-control" id="form_address" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Địa chỉ Hiện tại</label>
-                            <input type="text" class="form-control" id="form_current_address">
+                            <label class="form-label" for="form_current_address">Địa chỉ Hiện tại *</label>
+                            <input type="text" class="form-control" id="form_current_address" required>
                         </div>
 
                         <h6 class="detail-group-title w-100">Thông tin Đào tạo</h6>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Trạng thái học tập *</label>
-                            <select class="form-select" id="form_status">
+                            <label class="form-label" for="form_status">Trạng thái học tập *</label>
+                            <select class="form-select" id="form_status" required>
+                                <option value="">-- Chọn --</option>
                                 <option value="studying">Studying (Đang học)</option>
                                 <option value="reserved">Reserved (Bảo lưu)</option>
                                 <option value="dropout">Dropout (Thôi học)</option>
@@ -172,28 +188,39 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Lớp hành chính</label>
-                            <input type="text" class="form-control" id="form_student_classe_id" placeholder="VD: CNTT-K20A">
+                            <label class="form-label" for="form_student_classe_id">Lớp hành chính *</label>
+                            <select class="form-select" id="form_student_classe_id" required>
+                                <option value="">-- Chọn Lớp --</option>
+                            </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Lớp.</div>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Niên khóa</label>
-                            <input type="text" class="form-control" id="form_academic_year_id" placeholder="VD: NK2023-2027">
+                            <label class="form-label" for="form_academic_year_id">Niên khóa *</label>
+                            <select class="form-select" id="form_academic_year_id" required>
+                                <option value="">-- Chọn Niên khóa --</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Ngày nhập học</label>
-                            <input type="text" class="form-control" id="form_admission_year" placeholder="DD/MM/YYYY">
+                            <label class="form-label" for="form_admission_year">Ngày nhập học *</label>
+                            <input type="date" class="form-control" id="form_admission_year" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Khoa</label>
-                            <input type="text" class="form-control" id="form_department_id">
+                            <label class="form-label" for="form_department_id">Khoa *</label>
+                            <select class="form-select" id="form_department_id" required>
+                                <option value="">-- Chọn Khoa --</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Ngành học</label>
-                            <input type="text" class="form-control" id="form_major_id">
+                            <label class="form-label" for="form_major_id">Ngành học *</label>
+                            <select class="form-select" id="form_major_id" required>
+                                <option value="">-- Chọn Ngành --</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Chương trình ĐT</label>
-                            <input type="text" class="form-control" id="form_training_program_id">
+                            <label class="form-label" for="form_training_program_id">Chương trình ĐT *</label>
+                            <select class="form-select" id="form_training_program_id" required>
+                                <option value="">-- Chọn Chương trình --</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -209,15 +236,53 @@
     <script>
         let detailModal;
         let formModal;
-        let currentEditingCode = "";
 
         document.addEventListener("DOMContentLoaded", function () {
             detailModal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
             formModal = new bootstrap.Modal(document.getElementById('studentFormModal'));
+            
+            // Tải dữ liệu cho các bảng chọn
+            loadDropdownData();
             renderTable();
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('form_date_of_issue').setAttribute('max', today);
+            document.getElementById('form_admission_year').setAttribute('max', today);
         });
 
-        // Gọi API lấy danh sách sinh viên
+        async function loadDropdownData() {
+            try {
+                // Tải dữ liệu danh mục từ API duy nhất
+                const res = await fetch('/api/discovery/options');
+                const options = await res.json();
+
+                if (options) {
+                    populateSelect('form_student_classe_id', options.classes, 'id', 'code', 'name');
+                    populateSelect('form_academic_year_id', options.academicYears, 'id', 'name');
+                    populateSelect('form_department_id', options.departments, 'id', 'name');
+                    populateSelect('form_major_id', options.majors, 'id', 'name');
+                    populateSelect('form_training_program_id', options.programs, 'id', 'name');
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu danh mục:", error);
+            }
+        }
+
+        function populateSelect(elementId, data, valueKey, labelKey, subLabelKey) {
+            const select = document.getElementById(elementId);
+            if (!select || !Array.isArray(data)) return;
+            
+            // Xóa các option cũ trừ option đầu tiên
+            while (select.options.length > 1) select.remove(1);
+
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valueKey];
+                opt.textContent = subLabelKey ? `${item[labelKey]} - ${item[subLabelKey]}` : item[labelKey];
+                select.appendChild(opt);
+            });
+        }
+
         async function fetchStudents() {
             const res = await fetch('/api/students');
             return await res.json();
@@ -237,9 +302,8 @@
                 const tr = document.createElement("tr");
                 tr.className = "clickable-row";
                 tr.onclick = () => showDetail(student.code);
-                tr.title = "Click để xem chi tiết";
                 tr.innerHTML = `
-                    <td class="ps-4">${student.code}</td>
+                    <td class="ps-4 fw-bold">${student.code}</td>
                     <td class="text-primary fw-medium">${student.full_name}</td>
                     <td>${student.date_of_birth || ''}</td>
                     <td>${student.studentClassName || ''}</td>
@@ -254,7 +318,6 @@
             });
         }
 
-        // Gọi API lấy chi tiết 1 sinh viên
         async function showDetail(studentCode) {
             const res = await fetch(`/api/students/${studentCode}`);
             const student = await res.json();
@@ -283,7 +346,9 @@
         }
 
         function openAddModal() {
-            document.getElementById("studentForm").reset();
+            const form = document.getElementById("studentForm");
+            form.reset();
+            form.classList.remove('was-validated');
             document.getElementById("form_mode").value = "add";
             document.getElementById("form_id").value = "";
             document.getElementById("form_code").disabled = false;
@@ -291,7 +356,13 @@
             formModal.show();
         }
 
-        // Gọi API lấy chi tiết để đổ vào form sửa
+        function formatDateToInput(dateStr) {
+            if (!dateStr) return "";
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return "";
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
         async function openEditModal(event, studentCode) {
             if (event) event.stopPropagation();
 
@@ -299,56 +370,59 @@
             const student = await res.json();
             if (!student) return;
 
+            const form = document.getElementById("studentForm");
+            form.classList.remove('was-validated');
+
             document.getElementById("form_mode").value = "edit";
             document.getElementById("form_id").value = student.id;
             document.getElementById("form_code").value = student.code;
             document.getElementById("form_code").disabled = true;
             document.getElementById("form_full_name").value = student.full_name;
-            document.getElementById("form_date_of_birth").value = student.date_of_birth || '';
+            document.getElementById("form_date_of_birth").value = formatDateToInput(student.date_of_birth);
             document.getElementById("form_gender").value = student.gender || '';
             document.getElementById("form_personal_identification_number").value = student.personal_identification_number || '';
-            document.getElementById("form_date_of_issue").value = student.date_of_issue || '';
+            document.getElementById("form_date_of_issue").value = formatDateToInput(student.date_of_issue);
             document.getElementById("form_card_place").value = student.card_place || '';
             document.getElementById("form_address").value = student.address || '';
             document.getElementById("form_current_address").value = student.current_address || '';
             document.getElementById("form_status").value = student.status;
             document.getElementById("form_student_classe_id").value = student.studentClasseId || '';
             document.getElementById("form_academic_year_id").value = student.academicYearId || '';
-            document.getElementById("form_admission_year").value = student.admissionYear || '';
+            document.getElementById("form_admission_year").value = formatDateToInput(student.admissionYear);
             document.getElementById("form_department_id").value = student.departmentId || '';
             document.getElementById("form_major_id").value = student.majorId || '';
             document.getElementById("form_training_program_id").value = student.trainingProgramId || '';
 
-            document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-user-edit me-2"></i> Chỉnh sửa Sinh viên';
+            document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-user-edit me-2"></i> Chỉnh sửa Hồ sơ';
             formModal.show();
         }
 
-        // Gọi API POST/PUT lưu sinh viên
         async function saveStudent() {
-            const id = document.getElementById("form_id").value;
-            const newData = {
-                code: document.getElementById("form_code").value.trim(),
-                full_name: document.getElementById("form_full_name").value.trim(),
-                date_of_birth: document.getElementById("form_date_of_birth").value || null,
-                gender: document.getElementById("form_gender").value,
-                personal_identification_number: document.getElementById("form_personal_identification_number").value,
-                date_of_issue: document.getElementById("form_date_of_issue").value || null,
-                card_place: document.getElementById("form_card_place").value,
-                address: document.getElementById("form_address").value,
-                current_address: document.getElementById("form_current_address").value,
-                status: document.getElementById("form_status").value,
-                studentClasseId: document.getElementById("form_student_classe_id").value || null,
-                academicYearId: document.getElementById("form_academic_year_id").value || null,
-                admissionYear: document.getElementById("form_admission_year").value || null,
-                departmentId: document.getElementById("form_department_id").value || null,
-                majorId: document.getElementById("form_major_id").value || null,
-                trainingProgramId: document.getElementById("form_training_program_id").value || null,
-            };
-
-            if (!newData.code || !newData.full_name) {
-                alert("Vui lòng nhập Mã SV và Họ Tên!");
+            const form = document.getElementById("studentForm");
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
                 return;
             }
+
+            const id = document.getElementById("form_id").value;
+            const newData = {
+                code: document.getElementById("form_code").value.trim().toUpperCase(),
+                full_name: document.getElementById("form_full_name").value.trim(),
+                date_of_birth: document.getElementById("form_date_of_birth").value,
+                gender: document.getElementById("form_gender").value,
+                personal_identification_number: document.getElementById("form_personal_identification_number").value.trim(),
+                date_of_issue: document.getElementById("form_date_of_issue").value,
+                card_place: document.getElementById("form_card_place").value.trim(),
+                address: document.getElementById("form_address").value.trim(),
+                current_address: document.getElementById("form_current_address").value.trim(),
+                status: document.getElementById("form_status").value,
+                studentClasseId: document.getElementById("form_student_classe_id").value,
+                academicYearId: document.getElementById("form_academic_year_id").value,
+                admissionYear: document.getElementById("form_admission_year").value,
+                departmentId: document.getElementById("form_department_id").value,
+                majorId: document.getElementById("form_major_id").value,
+                trainingProgramId: document.getElementById("form_training_program_id").value,
+            };
 
             const mode = document.getElementById("form_mode").value;
             const url = mode === "add" ? '/api/students' : `/api/students/${id}`;

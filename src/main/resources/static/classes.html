@@ -23,6 +23,9 @@
         .detail-label { font-size: 0.8rem; color: #6c757d; margin-bottom: 2px; display: block; }
         .detail-value { font-size: 0.95rem; font-weight: 500; color: #212529; margin-bottom: 15px;}
         .modal-header-custom { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+        .form-label { font-weight: bold; }
+        .invalid-feedback { font-size: 0.8rem; }
+        #form_code { text-transform: uppercase; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -65,11 +68,11 @@
                         </div>
                         <h6 class="detail-group-title">Đào tạo & Quản lý</h6>
                         <div class="row">
-                            <div class="col-md-6"><span class="detail-label">Niên khóa (academic_year_id)</span><div class="detail-value" id="detail-academic_year_id"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Khoa (department_id)</span><div class="detail-value" id="detail-department_id"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Ngành (major_id)</span><div class="detail-value" id="detail-major_id"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Chương trình ĐT (training_program_id)</span><div class="detail-value" id="detail-training_program_id"></div></div>
-                            <div class="col-md-12"><span class="detail-label">Cố vấn học tập (employee_id)</span><div class="detail-value text-warning fw-bold" id="detail-employee_id"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Niên khóa (academic_year_id)</span><div class="detail-value" id="detail-academicYearName"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Khoa (department_id)</span><div class="detail-value" id="detail-departmentName"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Ngành (major_id)</span><div class="detail-value" id="detail-majorName"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Chương trình ĐT (training_program_id)</span><div class="detail-value" id="detail-trainingProgramName"></div></div>
+                            <div class="col-md-12"><span class="detail-label">Cố vấn học tập (employee_id)</span><div class="detail-value text-warning fw-bold" id="detail-advisorName"></div></div>
                         </div>
                         <h6 class="detail-group-title">Hệ thống</h6>
                         <div class="row">
@@ -96,43 +99,61 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
-                    <form id="classForm" class="row g-3 p-2">
+                    <form id="classForm" class="row g-3 p-2 needs-validation" novalidate>
                         <input type="hidden" id="form_mode" value="add">
+                        <input type="hidden" id="form_id">
                         
                         <h6 class="detail-group-title mt-0 w-100">Thông tin Lớp</h6>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Mã Lớp *</label>
-                            <input type="text" class="form-control" id="form_code" required placeholder="VD: CNTT-K20A">
+                            <label class="form-label" for="form_code">Mã Lớp *</label>
+                            <input type="text" class="form-control" id="form_code" required 
+                                   pattern="[A-Za-z0-9\-]+" placeholder="VD: CNTT-K20A"
+                                   oninput="this.value = this.value.toUpperCase()">
+                            <div class="invalid-feedback">Bắt buộc: Nhập Mã Lớp.</div>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label fw-bold">Tên Lớp *</label>
-                            <input type="text" class="form-control" id="form_name" required>
+                            <label class="form-label" for="form_name">Tên Lớp *</label>
+                            <input type="text" class="form-control" id="form_name" required
+                                   placeholder="VD: Công nghệ thông tin K20A">
+                            <div class="invalid-feedback">Bắt buộc: Nhập Tên Lớp.</div>
                         </div>
 
                         <h6 class="detail-group-title w-100">Đào tạo & Quản lý</h6>
                         <div class="col-md-6">
-                            <label class="form-label">Niên khóa</label>
-                            <input type="text" class="form-control" id="form_academic_year_id" placeholder="VD: NK2023-2027">
+                            <label class="form-label" for="form_academic_year_id">Niên khóa *</label>
+                            <select class="form-select" id="form_academic_year_id" required>
+                                <option value="">-- Chọn Niên khóa --</option>
+                            </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Niên khóa.</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Khoa</label>
-                            <input type="text" class="form-control" id="form_department_id">
+                            <label class="form-label" for="form_department_id">Khoa *</label>
+                            <select class="form-select" id="form_department_id" required>
+                                <option value="">-- Chọn Khoa --</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Ngành học</label>
-                            <input type="text" class="form-control" id="form_major_id">
+                            <label class="form-label" for="form_major_id">Ngành học *</label>
+                            <select class="form-select" id="form_major_id" required>
+                                <option value="">-- Chọn Ngành --</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Chương trình ĐT</label>
-                            <input type="text" class="form-control" id="form_training_program_id">
+                            <label class="form-label" for="form_training_program_id">Chương trình ĐT *</label>
+                            <select class="form-select" id="form_training_program_id" required>
+                                <option value="">-- Chọn Chương trình --</option>
+                            </select>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label">Cố vấn học tập</label>
-                            <input type="text" class="form-control" id="form_employee_id" placeholder="Tên hoặc mã CVHT">
+                            <label class="form-label" for="form_employee_id">Cố vấn học tập *</label>
+                            <select class="form-select" id="form_employee_id" required>
+                                <option value="">-- Chọn Giảng viên Cố vấn --</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Trạng thái *</label>
-                            <select class="form-select" id="form_is_active">
+                            <label class="form-label" for="form_is_active">Trạng thái *</label>
+                            <select class="form-select" id="form_is_active" required>
+                                <option value="">-- Chọn --</option>
                                 <option value="1">1 - Hoạt động</option>
                                 <option value="0">0 - Khóa</option>
                             </select>
@@ -151,15 +172,44 @@
     <script>
         let classDetailModal;
         let classFormModal;
-        let currentEditingCode = "";
 
         document.addEventListener("DOMContentLoaded", () => {
             classDetailModal = new bootstrap.Modal(document.getElementById('classDetailModal'));
             classFormModal = new bootstrap.Modal(document.getElementById('classFormModal'));
+            loadDropdownData();
             renderTable();
         });
 
-        // Gọi API lấy danh sách lớp
+        async function loadDropdownData() {
+            try {
+                const [academicYears, departments, majors, programs, employees] = await Promise.all([
+                    fetch('/api/discovery/academic-years').then(r => r.json()),
+                    fetch('/api/discovery/departments').then(r => r.json()),
+                    fetch('/api/discovery/majors').then(r => r.json()),
+                    fetch('/api/discovery/training-programs').then(r => r.json()),
+                    fetch('/api/discovery/employees').then(r => r.json())
+                ]);
+
+                populateSelect('form_academic_year_id', academicYears, 'id', 'name');
+                populateSelect('form_department_id', departments, 'id', 'name');
+                populateSelect('form_major_id', majors, 'id', 'name');
+                populateSelect('form_training_program_id', programs, 'id', 'name');
+                populateSelect('form_employee_id', employees, 'id', 'full_name');
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu danh mục:", error);
+            }
+        }
+
+        function populateSelect(elementId, data, valueKey, labelKey) {
+            const select = document.getElementById(elementId);
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valueKey];
+                opt.textContent = item[labelKey];
+                select.appendChild(opt);
+            });
+        }
+
         async function fetchClasses() {
             const res = await fetch('/api/classes');
             return await res.json();
@@ -187,7 +237,6 @@
             });
         }
 
-        // Gọi API lấy chi tiết 1 lớp theo code
         async function showDetail(code) {
             const res = await fetch(`/api/classes/${code}`);
             const cls = await res.json();
@@ -210,7 +259,9 @@
         }
 
         function openAddModal() {
-            document.getElementById("classForm").reset();
+            const form = document.getElementById("classForm");
+            form.reset();
+            form.classList.remove('was-validated');
             document.getElementById("form_mode").value = "add";
             document.getElementById("form_id").value = "";
             document.getElementById("form_code").disabled = false;
@@ -218,13 +269,15 @@
             classFormModal.show();
         }
 
-        // Gọi API lấy chi tiết để đổ vào form sửa
         async function openEditModal(event, code) {
             if (event) event.stopPropagation();
 
             const res = await fetch(`/api/classes/${code}`);
             const cls = await res.json();
             if (!cls) return;
+
+            const form = document.getElementById("classForm");
+            form.classList.remove('was-validated');
 
             document.getElementById("form_mode").value = "edit";
             document.getElementById("form_id").value = cls.id;
@@ -242,23 +295,23 @@
             classFormModal.show();
         }
 
-        // Gọi API POST/PUT lưu lớp
         async function saveClass() {
-            const id = document.getElementById("form_id").value;
-            const newData = {
-                code: document.getElementById("form_code").value.trim(),
-                name: document.getElementById("form_name").value.trim(),
-                academicYearId: document.getElementById("form_academic_year_id").value || null,
-                departmentId: document.getElementById("form_department_id").value || null,
-                majorId: document.getElementById("form_major_id").value || null,
-                trainingProgramId: document.getElementById("form_training_program_id").value || null,
-                employeeId: document.getElementById("form_employee_id").value || null
-            };
-
-            if (!newData.code || !newData.name) {
-                alert("Vui lòng nhập Mã Lớp và Tên Lớp!");
+            const form = document.getElementById("classForm");
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
                 return;
             }
+
+            const id = document.getElementById("form_id").value;
+            const newData = {
+                code: document.getElementById("form_code").value.trim().toUpperCase(),
+                name: document.getElementById("form_name").value.trim(),
+                academicYearId: document.getElementById("form_academic_year_id").value,
+                departmentId: document.getElementById("form_department_id").value,
+                majorId: document.getElementById("form_major_id").value,
+                trainingProgramId: document.getElementById("form_training_program_id").value,
+                employeeId: document.getElementById("form_employee_id").value
+            };
 
             const mode = document.getElementById("form_mode").value;
             const url = mode === "add" ? '/api/classes' : `/api/classes/${id}`;

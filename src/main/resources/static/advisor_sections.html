@@ -34,6 +34,8 @@
         .detail-label { font-size: 0.8rem; color: #6c757d; margin-bottom: 2px; display: block; }
         .detail-value { font-size: 0.95rem; font-weight: 500; color: #212529; margin-bottom: 15px; word-wrap: break-word;}
         .modal-header-custom { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+        .form-label { font-weight: bold; }
+        .invalid-feedback { font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -49,13 +51,13 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="h3 mb-0 text-gray-800 fw-bold">Quản lý Phân công Cố vấn học tập</h2>
         </div>
-        <div class="card admin-card">
+        <div class="card admin-card shadow-sm">
             <div class="admin-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="search-wrapper">
                     <i class="fas fa-search"></i>
                     <input type="text" class="form-control form-control-sm" id="search-input" placeholder="Tìm theo tên CVHT, mã lớp..." oninput="renderTable()">
                 </div>
-                <button class="btn btn-primary btn-icon-text btn-sm" onclick="openAddModal()">
+                <button class="btn btn-primary btn-icon-text btn-sm shadow-sm" onclick="openAddModal()">
                     <i class="fas fa-plus"></i> Tạo Phân công mới
                 </button>
             </div>
@@ -63,10 +65,10 @@
                 <table class="table table-modern table-hover">
                     <thead>
                         <tr>
-                            <th width="20%">Lớp (student_classe_id)</th>
-                            <th width="35%">Cố vấn (employee_id)</th>
-                            <th width="15%">Từ ngày</th>
-                            <th width="15%">Đến ngày</th>
+                            <th width="20%">Mã Lớp</th>
+                            <th width="35%">Cố vấn học tập</th>
+                            <th width="15%">Bắt đầu</th>
+                            <th width="15%">Kết thúc</th>
                             <th width="15%" class="text-end">Hành động</th>
                         </tr>
                     </thead>
@@ -74,7 +76,7 @@
                 </table>
             </div>
             <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center rounded-bottom-4">
-                <span class="text-muted small">Hiển thị <span id="current-count">0</span> trong tổng số <span id="total-count">0</span> phân công</span>
+                <span class="text-muted small">Hiển thị <span id="current-count" class="fw-bold">0</span> trong tổng số <span id="total-count">0</span> bản ghi</span>
             </div>
         </div>
     </div>
@@ -113,7 +115,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <input type="hidden" id="detail-active-id">
                     <button type="button" class="btn btn-danger" id="modal-btn-end" onclick="triggerEndFromDetail()"><i class="fas fa-power-off"></i> Kết thúc phân công</button>
-                    <button type="button" class="btn btn-warning" onclick="triggerEditFromDetail()"><i class="fas fa-edit"></i> Chỉnh sửa</button>
+                    <button type="button" class="btn btn-warning" onclick="triggerEditFromDetail()"><i class="fas fa-edit"></i> Chỉnh sửa dữ liệu</button>
                 </div>
             </div>
         </div>
@@ -128,31 +130,42 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
-                    <form id="advisorForm" class="row g-3">
+                    <form id="advisorForm" class="row g-3 needs-validation" novalidate>
                         <input type="hidden" id="form_mode" value="add">
                         <input type="hidden" id="form_id">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Cố vấn học tập (employee_id) *</label>
-                            <input type="text" class="form-control" id="form_employee" required placeholder="VD: ThS. Trần B">
+                            <label class="form-label" for="form_employee">Cố vấn học tập (Giảng viên) *</label>
+                            <select class="form-select" id="form_employee" required>
+                                <option value="">-- Chọn Giảng viên --</option>
+                            </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Cố vấn.</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Lớp hành chính (student_classe_id) *</label>
-                            <input type="text" class="form-control" id="form_class" required placeholder="VD: CNTT-K20A">
+                            <label class="form-label" for="form_class">Lớp hành chính *</label>
+                            <select class="form-select" id="form_class" required>
+                                <option value="">-- Chọn Lớp --</option>
+                            </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn Lớp.</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Từ ngày (start_date) *</label>
-                            <input type="text" class="form-control" id="form_start_date" placeholder="DD/MM/YYYY">
+                            <label class="form-label" for="form_start_date">Ngày bắt đầu *</label>
+                            <input type="date" class="form-control" id="form_start_date" required 
+                                   onchange="document.getElementById('form_end_date').setAttribute('min', this.value)">
+                            <div class="invalid-feedback">Bắt buộc: Chọn ngày bắt đầu.</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Đến ngày (end_date)</label>
-                            <input type="text" class="form-control" id="form_end_date" placeholder="DD/MM/YYYY hoặc NULL">
+                            <label class="form-label" for="form_end_date">Ngày kết thúc *</label>
+                            <input type="date" class="form-control" id="form_end_date" required>
+                            <div class="invalid-feedback">Bắt buộc: Ngày kết thúc >= Ngày bắt đầu.</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Hiệu lực (is_active) *</label>
-                            <select class="form-select" id="form_is_active">
-                                <option value="1">1 - Hoạt động</option>
+                            <label class="form-label" for="form_is_active">Hiệu lực (is_active) *</label>
+                            <select class="form-select" id="form_is_active" required>
+                                <option value="">-- Chọn --</option>
+                                <option value="1">1 - Đang hoạt động</option>
                                 <option value="0">0 - Đã kết thúc/Khóa</option>
                             </select>
+                            <div class="invalid-feedback">Bắt buộc: Chọn trạng thái hiệu lực.</div>
                         </div>
                     </form>
                 </div>
@@ -176,15 +189,18 @@
                     <div class="alert alert-warning py-2 small">
                         <i class="fas fa-exclamation-triangle"></i> Bạn đang thực hiện khép lại nhiệm kỳ cố vấn cho lớp học này. Trạng thái sẽ chuyển thành <strong>Đã kết thúc</strong>.
                     </div>
-                    <input type="hidden" id="end_id">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Ngày kết thúc (end_date) *</label>
-                        <input type="text" class="form-control" id="end_date_input" placeholder="DD/MM/YYYY">
-                    </div>
+                    <form id="endForm" class="needs-validation" novalidate>
+                        <input type="hidden" id="end_id">
+                        <div class="mb-3">
+                            <label class="form-label" for="end_date_input">Ngày kết thúc nhiệm kỳ *</label>
+                            <input type="date" class="form-control" id="end_date_input" required>
+                            <div class="invalid-feedback">Bắt buộc: Chọn ngày kết thúc thực tế.</div>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmEndAdvisor()"><i class="fas fa-check"></i> Xác nhận kết thúc</button>
+                    <button type="button" class="btn btn-danger shadow-sm" onclick="confirmEndAdvisor()"><i class="fas fa-check"></i> Xác nhận hoàn tất</button>
                 </div>
             </div>
         </div>
@@ -193,44 +209,75 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let advisorDetailModal, advisorFormModal, endAdvisorModal;
-        let allData = []; // cache dữ liệu từ API để search client-side
+        let allData = [];
 
         document.addEventListener("DOMContentLoaded", function () {
             advisorDetailModal = new bootstrap.Modal(document.getElementById('advisorDetailModal'));
             advisorFormModal = new bootstrap.Modal(document.getElementById('advisorFormModal'));
             endAdvisorModal = new bootstrap.Modal(document.getElementById('endAdvisorModal'));
+            loadDropdownData();
             renderTable();
         });
 
+        async function loadDropdownData() {
+            try {
+                const [employees, classes] = await Promise.all([
+                    fetch('/api/discovery/employees').then(r => r.json()),
+                    fetch('/api/classes').then(r => r.json())
+                ]);
+
+                populateSelect('form_employee', employees, 'id', 'full_name');
+                populateSelect('form_class', classes, 'id', 'code', 'name');
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu danh mục:", error);
+            }
+        }
+
+        function populateSelect(elementId, data, valueKey, labelKey, subLabelKey) {
+            const select = document.getElementById(elementId);
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valueKey];
+                opt.textContent = subLabelKey ? `${item[labelKey]} - ${item[subLabelKey]}` : item[labelKey];
+                select.appendChild(opt);
+            });
+        }
+
         function getAvatarInitials(name) {
-            let parts = name.split(" ");
+            if (!name) return "?";
+            let parts = name.trim().split(" ");
             return parts[parts.length - 1].charAt(0).toUpperCase();
         }
 
-        // TODO: Gọi API lấy danh sách phân công
         async function fetchAdvisors() {
-            // const res = await fetch('/api/advisor-sections');
-            // return await res.json();
+            try {
+                const res = await fetch('/api/advisor-sections');
+                if (res.ok) return await res.json();
+            } catch (e) {}
             return [];
         }
 
         async function renderTable() {
             allData = await fetchAdvisors();
 
-            const keyword = (document.getElementById('search-input')?.value || "").toLowerCase();
+            const keyword = (document.getElementById('search-input')?.value || "").toLowerCase().trim();
             const filtered = keyword
-                ? allData.filter(a => a.employee_name.toLowerCase().includes(keyword) || a.student_classe_id.toLowerCase().includes(keyword))
+                ? allData.filter(a => (a.employee_name && a.employee_name.toLowerCase().includes(keyword)) || (a.student_classe_id && a.student_classe_id.toLowerCase().includes(keyword)))
                 : allData;
 
             const tableBody = document.getElementById("advisor-table-body");
             tableBody.innerHTML = "";
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted fst-italic">Không tìm thấy dữ liệu phân công phù hợp.</td></tr>`;
+            }
 
             filtered.forEach(adv => {
                 const tr = document.createElement("tr");
                 tr.className = "clickable-row";
                 tr.onclick = () => showDetail(adv.id);
 
-                let isEnded = adv.end_date !== "NULL" || adv.is_active === 0;
+                let isEnded = (adv.end_date && adv.end_date !== "NULL") || adv.is_active === 0;
                 let avatarChar = getAvatarInitials(adv.employee_name);
                 let avatarClass = isEnded ? "bg-secondary bg-opacity-10 text-secondary" : "bg-primary bg-opacity-10 text-primary";
                 let textClass = isEnded ? "fw-medium text-secondary" : "fw-bold text-dark";
@@ -239,20 +286,20 @@
                     : `<span class="status-active"><span class="spinner-grow spinner-grow-sm text-success" style="width:8px;height:8px;"></span> Đang phụ trách</span>`;
 
                 let actionButtonsHtml = !isEnded
-                    ? `<button class="btn btn-light btn-action text-warning border" onclick="openEditModal(event,${adv.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
-                       <button class="btn btn-light btn-action text-danger border" onclick="openEndModal(event,${adv.id})" title="Kết thúc phân công"><i class="fas fa-power-off"></i></button>`
-                    : `<button class="btn btn-light btn-action text-secondary border" onclick="openEditModal(event,${adv.id})" title="Chỉnh sửa (Lịch sử)"><i class="fas fa-edit"></i></button>
+                    ? `<button class="btn btn-light btn-action text-warning border shadow-sm" onclick="openEditModal(event,${adv.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+                       <button class="btn btn-light btn-action text-danger border shadow-sm" onclick="openEndModal(event,${adv.id})" title="Kết thúc phân công"><i class="fas fa-power-off"></i></button>`
+                    : `<button class="btn btn-light btn-action text-secondary border" onclick="openEditModal(event,${adv.id})" title="Xem lịch sử"><i class="fas fa-edit"></i></button>
                        <button class="btn btn-light btn-action text-secondary border disabled" onclick="event.stopPropagation();" title="Đã khóa"><i class="fas fa-lock"></i></button>`;
 
                 tr.innerHTML = `
-                    <td><span class="class-code-badge">${adv.student_classe_id}</span></td>
+                    <td><span class="class-code-badge fw-bold font-monospace">${adv.student_classe_id}</span></td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="avatar-sm ${avatarClass}">${avatarChar}</div>
                             <span class="${textClass}">${adv.employee_name}</span>
                         </div>
                     </td>
-                    <td class="fw-medium">${adv.start_date}</td>
+                    <td class="fw-medium text-muted">${adv.start_date}</td>
                     <td>${endDateUI}</td>
                     <td class="text-end"><div class="d-flex justify-content-end gap-1">${actionButtonsHtml}</div></td>`;
                 tableBody.appendChild(tr);
@@ -262,22 +309,20 @@
             document.getElementById('total-count').textContent = allData.length;
         }
 
-        // TODO: Gọi API lấy chi tiết 1 phân công
         async function showDetail(id) {
-            // const res = await fetch(`/api/advisor-sections/${id}`);
-            // const adv = await res.json();
-            const adv = null; // placeholder
-            if (!adv) return;
+            const res = await fetch(`/api/advisor-sections/${id}`);
+            if (!res.ok) return;
+            const adv = await res.json();
 
             document.getElementById('detail-active-id').value = id;
             document.getElementById('detail-employee_name').textContent = adv.employee_name;
             document.getElementById('detail-student_classe_id').textContent = adv.student_classe_id;
             document.getElementById('detail-start_date').textContent = adv.start_date;
 
-            let isEnded = adv.end_date !== "NULL" || adv.is_active === 0;
+            let isEnded = (adv.end_date && adv.end_date !== "NULL") || adv.is_active === 0;
             document.getElementById('detail-end_date').innerHTML = isEnded
                 ? `<span class="fw-bold">${adv.end_date}</span>`
-                : `<span class="text-muted fst-italic">NULL (Vẫn đang phụ trách)</span>`;
+                : `<span class="text-muted fst-italic">Đang trong nhiệm kỳ (NULL)</span>`;
             document.getElementById('detail-is_active').innerHTML = adv.is_active === 1
                 ? `<span class="badge bg-primary">1 - Hoạt động</span>`
                 : `<span class="badge bg-secondary">0 - Đã kết thúc/Khóa</span>`;
@@ -302,56 +347,76 @@
         }
 
         function openAddModal() {
-            document.getElementById("advisorForm").reset();
+            const form = document.getElementById("advisorForm");
+            form.reset();
+            form.classList.remove('was-validated');
             document.getElementById("form_mode").value = "add";
-            document.getElementById("form_end_date").value = "NULL";
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-plus me-2"></i> Tạo Phân công mới';
             advisorFormModal.show();
         }
 
-        // TODO: Gọi API lấy chi tiết để đổ vào form sửa
+        function formatDateToInput(dateStr) {
+            if (!dateStr || dateStr === "NULL") return "";
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return "";
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
         async function openEditModal(event, id) {
             if (event) event.stopPropagation();
 
-            // const res = await fetch(`/api/advisor-sections/${id}`);
-            // const adv = await res.json();
-            const adv = null; // placeholder
-            if (!adv) return;
+            const res = await fetch(`/api/advisor-sections/${id}`);
+            if (!res.ok) return;
+            const adv = await res.json();
+
+            const form = document.getElementById("advisorForm");
+            form.classList.remove('was-validated');
 
             document.getElementById("form_mode").value = "edit";
             document.getElementById("form_id").value = id;
-            document.getElementById("form_employee").value = adv.employee_name;
-            document.getElementById("form_class").value = adv.student_classe_id;
-            document.getElementById("form_start_date").value = adv.start_date;
-            document.getElementById("form_end_date").value = adv.end_date;
+            document.getElementById("form_employee").value = adv.employeeId; // Dùng ID thay vì tên
+            document.getElementById("form_class").value = adv.studentClasseId; // Dùng ID thay vì mã lớp
+            
+            const startDate = formatDateToInput(adv.start_date);
+            document.getElementById("form_start_date").value = startDate;
+            document.getElementById("form_end_date").value = formatDateToInput(adv.end_date);
+            document.getElementById("form_end_date").setAttribute('min', startDate);
             document.getElementById("form_is_active").value = adv.is_active;
 
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-edit me-2"></i> Chỉnh sửa Phân công';
             advisorFormModal.show();
         }
 
-        // TODO: Gọi API POST/PUT lưu phân công
         async function saveAdvisor() {
-            const payload = {
-                employee_name: document.getElementById("form_employee").value.trim(),
-                student_classe_id: document.getElementById("form_class").value.trim(),
-                start_date: document.getElementById("form_start_date").value.trim(),
-                end_date: document.getElementById("form_end_date").value.trim(),
-                is_active: parseInt(document.getElementById("form_is_active").value),
-            };
-
-            if (!payload.employee_name || !payload.student_classe_id || !payload.start_date) {
-                alert("Vui lòng điền đủ các trường bắt buộc (*)");
+            const form = document.getElementById("advisorForm");
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
                 return;
             }
 
+            const payload = {
+                employeeId: document.getElementById("form_employee").value,
+                studentClasseId: document.getElementById("form_class").value,
+                start_date: document.getElementById("form_start_date").value,
+                end_date: document.getElementById("form_end_date").value,
+                is_active: parseInt(document.getElementById("form_is_active").value),
+            };
+
             const mode = document.getElementById("form_mode").value;
             if (mode === "add") {
-                // await fetch('/api/advisor-sections', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                await fetch('/api/advisor-sections', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
                 alert("Đã tạo phân công mới thành công!");
             } else {
                 const id = document.getElementById("form_id").value;
-                // await fetch(`/api/advisor-sections/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                await fetch(`/api/advisor-sections/${id}`, { 
+                    method: 'PUT', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
                 alert("Cập nhật phân công thành công!");
             }
 
@@ -361,22 +426,36 @@
 
         function openEndModal(event, id) {
             if (event) event.stopPropagation();
+            const form = document.getElementById("endForm");
+            form.reset();
+            form.classList.remove('was-validated');
             document.getElementById('end_id').value = id;
-            document.getElementById('end_date_input').value = new Date().toLocaleDateString('en-GB');
+            document.getElementById('end_date_input').value = new Date().toISOString().split('T')[0];
             endAdvisorModal.show();
         }
 
-        // Gọi API PATCH/PUT để kết thúc nhiệm kỳ
         async function confirmEndAdvisor() {
+            const form = document.getElementById("endForm");
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
             const id = document.getElementById('end_id').value;
-            const res = await fetch(`/api/advisor-sections/end/${id}`, { method: 'PUT' });
+            const endDate = document.getElementById('end_date_input').value;
+
+            const res = await fetch(`/api/advisor-sections/end/${id}`, { 
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ end_date: endDate })
+            });
 
             if (res.ok) {
-                alert("Đã kết thúc nhiệm kỳ cố vấn thành công!");
+                alert("Nghiệp vụ kết thúc nhiệm kỳ cố vấn hoàn tất!");
                 endAdvisorModal.hide();
                 renderTable();
             } else {
-                alert("Lỗi khi kết thúc nhiệm kỳ!");
+                alert("Lỗi khi thực hiện kết thúc nhiệm kỳ!");
             }
         }
     </script>
