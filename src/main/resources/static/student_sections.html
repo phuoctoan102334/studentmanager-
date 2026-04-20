@@ -26,6 +26,9 @@
         .modal-header-custom { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
         .form-label { font-weight: bold; }
         .invalid-feedback { font-size: 0.8rem; }
+        .error-board { display: none; margin-bottom: 20px; border-radius: 8px; }
+        .invalid-feedback { display: none; color: #dc3545; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
+        .is-invalid ~ .invalid-feedback { display: block; }
     </style>
 </head>
 <body>
@@ -46,10 +49,12 @@
                 </select>
                 <button class="btn btn-warning btn-sm fw-bold shadow-sm" onclick="openTransferModal()"><i class="fas fa-exchange-alt"></i> Nghiệp vụ Chuyển lớp</button>
             </div>
-            <table class="table table-modern table-hover mb-0">
-                <thead><tr><th>Mã SV</th><th>Tên Sinh viên</th><th>Lớp (Class)</th><th>Trạng thái (status)</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
-                <tbody id="section-table-body"></tbody>
-            </table>
+            <div class="card-body p-0">
+                <table class="table table-modern table-hover mb-0">
+                    <thead><tr><th class="ps-4">Mã SV</th><th>Tên Sinh viên</th><th>Lớp (Class)</th><th>Trạng thái (status)</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
+                    <tbody id="section-table-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -65,17 +70,16 @@
                     <div class="card border-0 shadow-sm p-4">
                         <h6 class="detail-group-title mt-0">Thông tin Phân lớp</h6>
                         <div class="row">
-                            <div class="col-md-6"><span class="detail-label">Sinh viên (student_id)</span><div class="detail-value text-primary fw-bold" id="detail-student_name"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Lớp học (student_classe_id)</span><div class="detail-value fw-bold" id="detail-class_code"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Mã sinh viên</span><div class="detail-value text-primary fw-bold" id="detail-studentCode"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Họ và tên</span><div class="detail-value fw-bold" id="detail-studentFullName"></div></div>
+                            <div class="col-md-12"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
                             <div class="col-md-12"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
-                            <div class="col-md-12"><span class="detail-label">Ghi chú (note)</span><div class="detail-value text-muted" id="detail-note"></div></div>
                         </div>
-                        <h6 class="detail-group-title">Thời gian & Hệ thống</h6>
+                        <h6 class="detail-group-title">Thời gian & Hiệu lực</h6>
                         <div class="row">
-                            <div class="col-md-6"><span class="detail-label">Bắt đầu (start_date)</span><div class="detail-value" id="detail-start_date"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Kết thúc (end_date)</span><div class="detail-value" id="detail-end_date"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Thời điểm tạo (created_at)</span><div class="detail-value" id="detail-created_at"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Hiệu lực (is_active)</span><div class="detail-value" id="detail-is_active"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Ngày bắt đầu</span><div class="detail-value" id="detail-startDate"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Ngày kết thúc</span><div class="detail-value" id="detail-endDate"></div></div>
+                            <div class="col-md-12"><span class="detail-label">Trạng thái hiệu lực (isActive)</span><div class="detail-value" id="detail-isActive"></div></div>
                         </div>
                     </div>
                 </div>
@@ -86,104 +90,49 @@
         </div>
     </div>
 
-    <!-- Modal Chỉnh sửa -->
-    <div class="modal fade" id="sectionEditModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i> Chỉnh sửa Phân lớp</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body bg-light">
-                    <form id="editForm" class="row g-3 needs-validation" novalidate>
-                        <input type="hidden" id="edit_id">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Sinh viên</label>
-                            <input type="text" class="form-control bg-white" id="edit_student" disabled>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Lớp hiện tại</label>
-                            <input type="text" class="form-control bg-white" id="edit_class" disabled>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="edit_status">Trạng thái (status) *</label>
-                            <select class="form-select" id="edit_status" required>
-                                <option value="">-- Chọn --</option>
-                                <option value="studying">Studying (Đang học)</option>
-                                <option value="completed">Completed (Hoàn thành)</option>
-                                <option value="dropped">Dropped (Hủy)</option>
-                            </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn trạng thái.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="edit_is_active">Hiệu lực (is_active) *</label>
-                            <select class="form-select" id="edit_is_active" required>
-                                <option value="">-- Chọn --</option>
-                                <option value="1">1 - Khả dụng</option>
-                                <option value="0">0 - Hết hiệu lực</option>
-                            </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn hiệu lực.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="edit_start_date">Từ ngày (start_date) *</label>
-                            <input type="date" class="form-control" id="edit_start_date" required 
-                                   onchange="document.getElementById('edit_end_date').setAttribute('min', this.value)">
-                            <div class="invalid-feedback">Bắt buộc: Chọn ngày bắt đầu.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="edit_end_date">Đến ngày (end_date) *</label>
-                            <input type="date" class="form-control" id="edit_end_date" required>
-                            <div class="invalid-feedback">Bắt buộc: Ngày kết thúc >= Ngày bắt đầu.</div>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label" for="edit_note">Ghi chú (note) *</label>
-                            <textarea class="form-control" id="edit_note" rows="2" placeholder="Nhập lý do điều chỉnh hoặc ghi chú thêm" required></textarea>
-                            <div class="invalid-feedback">Bắt buộc: Nhập ghi chú.</div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Lưu dữ liệu</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Chuyển lớp -->
     <div class="modal fade" id="transferModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i> Chuyển lớp Sinh viên</h5>
+                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i> Nghiệp vụ Chuyển lớp Sinh viên</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
+                    <!-- Bảng thông báo lỗi tổng hợp -->
+                    <div id="transfer-error-board" class="alert alert-danger error-board shadow-sm">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                            <strong class="fs-6">Không thể thực hiện nghiệp vụ do:</strong>
+                        </div>
+                        <ul id="transfer-error-list" class="mb-0"></ul>
+                    </div>
+
                     <form id="transferForm" class="row g-3 needs-validation" novalidate>
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label" for="trans_student_code">Chọn Sinh viên cần chuyển *</label>
                             <select class="form-select" id="trans_student_code" required>
                                 <option value="">-- Tìm và chọn sinh viên --</option>
                             </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn sinh viên.</div>
+                            <div class="invalid-feedback">Vui lòng chọn sinh viên.</div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label" for="trans_new_class">Lớp mới đến *</label>
                             <select class="form-select" id="trans_new_class" required>
                                 <option value="">-- Chọn lớp đích --</option>
                             </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn lớp mới.</div>
+                            <div class="invalid-feedback">Vui lòng chọn lớp học mới.</div>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="trans_note">Lý do chuyển lớp *</label>
-                            <textarea class="form-control" id="trans_note" rows="2" placeholder="Nhập lý do cụ thể (VD: Chuyển hộ khẩu, thay đổi nguyện vọng...)" required></textarea>
-                            <div class="invalid-feedback">Bắt buộc: Nhập lý do chuyển lớp.</div>
+                            <textarea class="form-control" id="trans_note" rows="3" placeholder="Nhập lý do cụ thể (VD: Chuyển hộ khẩu, thay đổi nguyện vọng, điều chỉnh quản lý...)" required></textarea>
+                            <div class="invalid-feedback">Vui lòng nhập lý do chuyển lớp.</div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-warning fw-bold" onclick="submitTransfer()"><i class="fas fa-exchange-alt"></i> Xác nhận Chuyển lớp</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-warning fw-bold shadow-sm" onclick="submitTransfer()"><i class="fas fa-exchange-alt"></i> Xác nhận Chuyển lớp</button>
                 </div>
             </div>
         </div>
@@ -191,11 +140,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let secModal, editModal, transferModal;
+        let secModal, transferModal;
 
         document.addEventListener("DOMContentLoaded", async () => {
             secModal = new bootstrap.Modal(document.getElementById('sectionDetailModal'));
-            editModal = new bootstrap.Modal(document.getElementById('sectionEditModal'));
             transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
 
             await loadClassOptions();
@@ -209,15 +157,19 @@
         });
 
         async function loadClassOptions() {
-            const res = await fetch('/api/classes');
-            const classes = await res.json();
-            const filter = document.getElementById('class-filter');
-            classes.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = `${c.code} - ${c.name}`;
-                filter.appendChild(opt);
-            });
+            try {
+                const res = await fetch('/api/classes');
+                const classes = await res.json();
+                const filter = document.getElementById('class-filter');
+                classes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.code} - ${c.name}`;
+                    filter.appendChild(opt);
+                });
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách lớp:", error);
+            }
         }
 
         async function fetchSections(classId) {
@@ -234,7 +186,7 @@
             tbody.innerHTML = "";
 
             if (sections.length === 0 && classId) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted fst-italic">Lớp này chưa có sinh viên nào được phân vào.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="ps-4 py-4 text-muted fst-italic">Lớp này chưa có sinh viên nào được phân vào.</td></tr>`;
                 return;
             }
 
@@ -242,55 +194,109 @@
                 let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
                 const tr = document.createElement("tr");
                 tr.className = "clickable-row";
-                tr.onclick = () => showDetail(sec.id);
+                tr.onclick = () => showDetail(sec.id, classId);
                 tr.innerHTML = `
-                    <td class="fw-bold text-primary">${sec.studentCode}</td>
+                    <td class="ps-4 fw-bold text-primary">${sec.studentCode}</td>
                     <td>${sec.studentFullName}</td>
-                    <td>${document.getElementById('class-filter').options[document.getElementById('class-filter').selectedIndex].text}</td>
+                    <td>${sec.studentClassName}</td>
                     <td><span class="badge ${badge} status-badge">${sec.status}</span></td>
                     <td>${sec.startDate || ''}</td>
                     <td>${!sec.endDate ? '<span class="text-muted fst-italic">Đang học</span>' : sec.endDate}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-warning" onclick="event.stopPropagation();" title="Chỉnh sửa (Tính năng đang phát triển)">
-                            <i class="fas fa-edit"></i>
+                        <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); showDetail('${sec.id}', '${classId}')" title="Xem chi tiết">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        function showDetail(id) {
+        async function showDetail(id, classId) {
+            const res = await fetch(`/api/student-sections/class/${classId}`);
+            const sections = await res.json();
+            const sec = sections.find(s => s.id === id);
+            if (!sec) return;
+
+            Object.keys(sec).forEach(key => {
+                const el = document.getElementById(`detail-${key}`);
+                if (el) {
+                    if (key === 'isActive') el.innerHTML = sec.isActive ? '<span class="badge bg-primary">Hoạt động</span>' : '<span class="badge bg-secondary">Hết hiệu lực</span>';
+                    else el.textContent = sec[key] || '---';
+                }
+            });
+
             secModal.show();
+        }
+
+        function clearErrors() {
+            document.getElementById("transfer-error-board").style.display = "none";
+            document.getElementById("transfer-error-list").innerHTML = "";
+            const inputs = document.querySelectorAll("#transferForm .form-control, #transferForm .form-select");
+            inputs.forEach(input => input.classList.remove("is-invalid"));
+        }
+
+        function showErrors(errors) {
+            const board = document.getElementById("transfer-error-board");
+            const list = document.getElementById("transfer-error-list");
+            list.innerHTML = "";
+            if (Array.isArray(errors)) {
+                errors.forEach(err => {
+                    const li = document.createElement("li");
+                    li.textContent = err;
+                    list.appendChild(li);
+                });
+            } else {
+                const li = document.createElement("li");
+                li.textContent = errors || "Đã xảy ra lỗi không xác định.";
+                list.appendChild(li);
+            }
+            board.style.display = "block";
         }
 
         async function openTransferModal() {
             const form = document.getElementById("transferForm");
             form.reset();
             form.classList.remove('was-validated');
+            clearErrors();
 
-            const svRes = await fetch('/api/students');
-            const students = await svRes.json();
-            const selectStudent = document.getElementById('trans_student_code');
-            selectStudent.innerHTML = '<option value="">-- Tìm và chọn sinh viên --</option>';
-            students.forEach(s => {
-                // Chỉ cho phép chọn sinh viên đang ở trạng thái studying
-                if (s.status === 'studying') {
-                    selectStudent.innerHTML += `<option value="${s.id}">${s.code} - ${s.full_name}</option>`;
-                }
-            });
+            try {
+                const [svRes, clsRes] = await Promise.all([
+                    fetch('/api/students'),
+                    fetch('/api/classes')
+                ]);
+                
+                const students = await svRes.json();
+                const selectStudent = document.getElementById('trans_student_code');
+                selectStudent.innerHTML = '<option value="">-- Tìm và chọn sinh viên --</option>';
+                students.forEach(s => {
+                    if (s.status === 'studying') {
+                        selectStudent.innerHTML += `<option value="${s.id}">${s.code} - ${s.fullName}</option>`;
+                    }
+                });
 
-            const clsRes = await fetch('/api/classes');
-            const classes = await clsRes.json();
-            const selectClass = document.getElementById('trans_new_class');
-            selectClass.innerHTML = '<option value="">-- Chọn lớp đích --</option>';
-            classes.forEach(c => selectClass.innerHTML += `<option value="${c.id}">${c.code} - ${c.name}</option>`);
+                const classes = await clsRes.json();
+                const selectClass = document.getElementById('trans_new_class');
+                selectClass.innerHTML = '<option value="">-- Chọn lớp đích --</option>';
+                classes.forEach(c => selectClass.innerHTML += `<option value="${c.id}">${c.code} - ${c.name}</option>`);
 
-            transferModal.show();
+                transferModal.show();
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu chuyển lớp:", error);
+            }
         }
 
         async function submitTransfer() {
+            clearErrors();
             const form = document.getElementById("transferForm");
             if (!form.checkValidity()) {
+                const invalidInputs = form.querySelectorAll(":invalid");
+                const errorMessages = [];
+                invalidInputs.forEach(input => {
+                    input.classList.add("is-invalid");
+                    const feedback = input.parentElement.querySelector('.invalid-feedback');
+                    errorMessages.push(feedback ? feedback.textContent : "Trường này không hợp lệ");
+                });
+                showErrors(errorMessages);
                 form.classList.add('was-validated');
                 return;
             }
@@ -299,29 +305,24 @@
             const newClassId = document.getElementById('trans_new_class').value;
             const reason = document.getElementById('trans_note').value;
 
-            const res = await fetch('/api/students/transfer', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ studentId, newClassId, reason })
-            });
+            try {
+                const res = await fetch('/api/students/transfer', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ studentId, newClassId, reason })
+                });
 
-            if (res.ok) {
-                alert("Nghiệp vụ chuyển lớp hoàn tất!");
-                transferModal.hide();
-                renderTable();
-            } else {
-                alert("Lỗi khi thực hiện nghiệp vụ chuyển lớp!");
+                if (res.ok) {
+                    alert("Nghiệp vụ chuyển lớp đã được thực hiện thành công!");
+                    transferModal.hide();
+                    renderTable();
+                } else {
+                    const err = await res.json();
+                    showErrors(err.message || "Lỗi khi thực hiện nghiệp vụ chuyển lớp!");
+                }
+            } catch (error) {
+                showErrors("Lỗi kết nối mạng. Vui lòng thử lại sau.");
             }
-        }
-
-        async function saveEdit() {
-            const form = document.getElementById("editForm");
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-            alert("Tính năng lưu chỉnh sửa dữ liệu đang được triển khai.");
-            editModal.hide();
         }
     </script>
 </body>

@@ -62,10 +62,14 @@ public class StudentServiceImpl implements StudentService {
         studentRepo.save(s);
 
         // Tạo bản ghi section nếu có lớp
-        if (s.getStudentClass() != null) {
+        if (dto.getStudentClasseId() != null) {
+            StudentClass sc = classRepo.findById(dto.getStudentClasseId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp: " + dto.getStudentClasseId()));
+            s.setStudentClass(sc);
+            
             StudentClassSection section = StudentClassSection.builder()
                     .student(s)
-                    .studentClass(s.getStudentClass())
+                    .studentClass(sc)
                     .status("studying")
                     .startDate(LocalDateTime.now())
                     .isActive(true)
@@ -83,8 +87,45 @@ public class StudentServiceImpl implements StudentService {
         Objects.requireNonNull(id, "ID không được để trống");
         Student s = studentRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sinh viên: " + id));
+        
+        UUID oldClassId = s.getStudentClass() != null ? s.getStudentClass().getId() : null;
+        UUID newClassId = dto.getStudentClasseId();
+
         mapFromDTO(s, dto);
         s.setUpdatedBy(updatedBy);
+
+        // Xử lý logic thay đổi lớp nếu có
+        if (!Objects.equals(oldClassId, newClassId)) {
+            // Đóng section cũ
+            sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(id)
+                    .ifPresent(old -> {
+                        old.setEndDate(LocalDateTime.now());
+                        old.setStatus("completed");
+                        old.setIsActive(false);
+                        old.setUpdatedBy(updatedBy);
+                        sectionRepo.save(old);
+                    });
+
+            // Nếu có lớp mới, tạo section mới
+            if (newClassId != null) {
+                StudentClass newClass = classRepo.findById(newClassId)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp mới"));
+                s.setStudentClass(newClass);
+                
+                StudentClassSection newSection = StudentClassSection.builder()
+                        .student(s)
+                        .studentClass(newClass)
+                        .status("studying")
+                        .startDate(LocalDateTime.now())
+                        .isActive(true)
+                        .createdBy(updatedBy)
+                        .build();
+                sectionRepo.save(newSection);
+            } else {
+                s.setStudentClass(null);
+            }
+        }
+
         return toDetailDTO(studentRepo.save(s));
     }
 

@@ -27,6 +27,9 @@
         .form-label { font-weight: bold; }
         .invalid-feedback { font-size: 0.8rem; }
         #form_code { text-transform: uppercase; font-family: monospace; font-weight: bold; letter-spacing: 1px; }
+        .error-board { display: none; margin-bottom: 20px; border-radius: 8px; }
+        .invalid-feedback { display: none; color: #dc3545; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
+        .is-invalid ~ .invalid-feedback { display: block; }
     </style>
 </head>
 <body>
@@ -76,26 +79,26 @@
                         <h6 class="detail-group-title mt-0"><i class="fas fa-user me-2"></i> Thông tin cơ bản</h6>
                         <div class="row">
                             <div class="col-md-3"><span class="detail-label">Mã số (code)</span><div class="detail-value text-primary fw-bold" id="detail-code"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Họ và tên (full_name)</span><div class="detail-value" id="detail-full_name"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Ngày sinh (date_of_birth)</span><div class="detail-value" id="detail-date_of_birth"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Họ và tên (fullName)</span><div class="detail-value" id="detail-fullName"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Ngày sinh (dateOfBirth)</span><div class="detail-value" id="detail-dateOfBirth"></div></div>
                             <div class="col-md-3"><span class="detail-label">Giới tính (gender)</span><div class="detail-value" id="detail-gender"></div></div>
                         </div>
                         <h6 class="detail-group-title"><i class="fas fa-passport me-2"></i> Thông tin Giấy tờ & Cư trú</h6>
                         <div class="row">
-                            <div class="col-md-4"><span class="detail-label">CMND/CCCD</span><div class="detail-value" id="detail-personal_identification_number"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Ngày cấp</span><div class="detail-value" id="detail-date_of_issue"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Nơi cấp</span><div class="detail-value" id="detail-card_place"></div></div>
+                            <div class="col-md-4"><span class="detail-label">CMND/CCCD</span><div class="detail-value" id="detail-personalIdentificationNumber"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Ngày cấp</span><div class="detail-value" id="detail-dateOfIssue"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Nơi cấp</span><div class="detail-value" id="detail-cardPlace"></div></div>
                             <div class="col-md-6"><span class="detail-label">Thường trú (address)</span><div class="detail-value" id="detail-address"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Hiện tại (current_address)</span><div class="detail-value" id="detail-current_address"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Hiện tại (currentAddress)</span><div class="detail-value" id="detail-currentAddress"></div></div>
                         </div>
                         <h6 class="detail-group-title"><i class="fas fa-graduation-cap me-2"></i> Thông tin Đào tạo</h6>
                         <div class="row">
                             <div class="col-md-3"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
                             <div class="col-md-3"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
                             <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academicYearName"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Ngày nhập học</span><div class="detail-value" id="detail-admission_year"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Khoa (department)</span><div class="detail-value" id="detail-departmentName"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Ngành (major)</span><div class="detail-value" id="detail-majorName"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Ngày nhập học</span><div class="detail-value" id="detail-admissionYear"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Khoa (departmentName)</span><div class="detail-value" id="detail-departmentName"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Ngành (majorName)</span><div class="detail-value" id="detail-majorName"></div></div>
                             <div class="col-md-4"><span class="detail-label">Chương trình</span><div class="detail-value" id="detail-trainingProgramName"></div></div>
                         </div>
                     </div>
@@ -117,6 +120,15 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
+                    <!-- Bảng thông báo lỗi tổng hợp -->
+                    <div id="form-error-board" class="alert alert-danger error-board shadow-sm">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                            <strong class="fs-6">Không thể thực hiện hành vi do các lỗi sau:</strong>
+                        </div>
+                        <ul id="error-list" class="mb-0"></ul>
+                    </div>
+
                     <form id="studentForm" class="row g-3 p-2 needs-validation" novalidate>
                         <input type="hidden" id="form_mode" value="add">
                         <input type="hidden" id="form_id">
@@ -127,29 +139,29 @@
                             <input type="text" class="form-control" id="form_code" required 
                                    pattern="[A-Za-z0-9]+" placeholder="VD: CNTT0123"
                                    oninput="this.value = this.value.toUpperCase()">
-                            <div class="invalid-feedback">Bắt buộc: Mã SV (chữ và số).</div>
+                            <div class="invalid-feedback">Mã SV không hợp lệ (chỉ gồm chữ và số).</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_full_name">Họ và Tên *</label>
                             <input type="text" class="form-control" id="form_full_name" required 
                                    placeholder="VD: Nguyễn Văn A">
-                            <div class="invalid-feedback">Bắt buộc: Nhập Họ và Tên.</div>
+                            <div class="invalid-feedback">Vui lòng nhập đầy đủ họ và tên.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_date_of_birth">Ngày sinh *</label>
                             <input type="date" class="form-control" id="form_date_of_birth" 
                                    max="2012-12-31" required>
-                            <div class="invalid-feedback">Bắt buộc: Chọn Ngày sinh.</div>
+                            <div class="invalid-feedback">Vui lòng chọn ngày sinh (sinh trước năm 2013).</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_gender">Giới tính *</label>
                             <select class="form-select" id="form_gender" required>
                                 <option value="">-- Chọn --</option>
-                                <option value="1 - Nam">Nam</option>
-                                <option value="2 - Nữ">Nữ</option>
-                                <option value="0 - Khác">Khác</option>
+                                <option value="1">Nam</option>
+                                <option value="2">Nữ</option>
+                                <option value="0">Khác</option>
                             </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn Giới tính.</div>
+                            <div class="invalid-feedback">Vui lòng chọn giới tính.</div>
                         </div>
 
                         <h6 class="detail-group-title w-100">Giấy tờ & Cư trú</h6>
@@ -157,23 +169,27 @@
                             <label class="form-label" for="form_personal_identification_number">Số CCCD *</label>
                             <input type="text" class="form-control" id="form_personal_identification_number" 
                                    pattern="[0-9]{9,12}" inputmode="numeric" placeholder="9 hoặc 12 số" required>
-                            <div class="invalid-feedback">Bắt buộc: Nhập Số CCCD.</div>
+                            <div class="invalid-feedback">Số CCCD phải có từ 9 đến 12 chữ số.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="form_date_of_issue">Ngày cấp *</label>
                             <input type="date" class="form-control" id="form_date_of_issue" required>
+                            <div class="invalid-feedback">Vui lòng chọn ngày cấp CCCD.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="form_card_place">Nơi cấp *</label>
                             <input type="text" class="form-control" id="form_card_place" required>
+                            <div class="invalid-feedback">Vui lòng nhập nơi cấp CCCD.</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="form_address">Địa chỉ Thường trú *</label>
                             <input type="text" class="form-control" id="form_address" required>
+                            <div class="invalid-feedback">Vui lòng nhập địa chỉ thường trú.</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="form_current_address">Địa chỉ Hiện tại *</label>
                             <input type="text" class="form-control" id="form_current_address" required>
+                            <div class="invalid-feedback">Vui lòng nhập địa chỉ hiện tại.</div>
                         </div>
 
                         <h6 class="detail-group-title w-100">Thông tin Đào tạo</h6>
@@ -186,41 +202,47 @@
                                 <option value="dropout">Dropout (Thôi học)</option>
                                 <option value="graduated">Graduated (Tốt nghiệp)</option>
                             </select>
+                            <div class="invalid-feedback">Vui lòng chọn trạng thái học tập.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_student_classe_id">Lớp hành chính *</label>
                             <select class="form-select" id="form_student_classe_id" required>
                                 <option value="">-- Chọn Lớp --</option>
                             </select>
-                            <div class="invalid-feedback">Bắt buộc: Chọn Lớp.</div>
+                            <div class="invalid-feedback">Vui lòng chọn lớp hành chính.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_academic_year_id">Niên khóa *</label>
                             <select class="form-select" id="form_academic_year_id" required>
                                 <option value="">-- Chọn Niên khóa --</option>
                             </select>
+                            <div class="invalid-feedback">Vui lòng chọn niên khóa.</div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label" for="form_admission_year">Ngày nhập học *</label>
                             <input type="date" class="form-control" id="form_admission_year" required>
+                            <div class="invalid-feedback">Vui lòng chọn ngày nhập học.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="form_department_id">Khoa *</label>
                             <select class="form-select" id="form_department_id" required>
                                 <option value="">-- Chọn Khoa --</option>
                             </select>
+                            <div class="invalid-feedback">Vui lòng chọn khoa quản lý.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="form_major_id">Ngành học *</label>
                             <select class="form-select" id="form_major_id" required>
                                 <option value="">-- Chọn Ngành --</option>
                             </select>
+                            <div class="invalid-feedback">Vui lòng chọn ngành học.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="form_training_program_id">Chương trình ĐT *</label>
                             <select class="form-select" id="form_training_program_id" required>
                                 <option value="">-- Chọn Chương trình --</option>
                             </select>
+                            <div class="invalid-feedback">Vui lòng chọn chương trình đào tạo.</div>
                         </div>
                     </form>
                 </div>
@@ -304,8 +326,8 @@
                 tr.onclick = () => showDetail(student.code);
                 tr.innerHTML = `
                     <td class="ps-4 fw-bold">${student.code}</td>
-                    <td class="text-primary fw-medium">${student.full_name}</td>
-                    <td>${student.date_of_birth || ''}</td>
+                    <td class="text-primary fw-medium">${student.fullName}</td>
+                    <td>${student.dateOfBirth || ''}</td>
                     <td>${student.studentClassName || ''}</td>
                     <td><span class="badge ${badgeClass}">${student.status}</span></td>
                     <td class="text-center">
@@ -329,8 +351,8 @@
                     if (key === 'status') {
                         let bClass = student.status === "reserved" ? "bg-secondary" : student.status === "dropout" ? "bg-danger" : student.status === "graduated" ? "bg-info text-dark" : "bg-success";
                         element.innerHTML = `<span class="badge ${bClass}">${student.status}</span>`;
-                    } else if (key === 'is_active') {
-                        element.innerHTML = student.is_active ? `<span class="badge bg-primary">Hoạt động</span>` : `<span class="badge bg-secondary">Khóa</span>`;
+                    } else if (key === 'isActive') {
+                        element.innerHTML = student.isActive ? `<span class="badge bg-primary">Hoạt động</span>` : `<span class="badge bg-secondary">Khóa</span>`;
                     } else {
                         element.textContent = student[key] || '';
                     }
@@ -349,12 +371,70 @@
             const form = document.getElementById("studentForm");
             form.reset();
             form.classList.remove('was-validated');
+            clearErrors();
             document.getElementById("form_mode").value = "add";
             document.getElementById("form_id").value = "";
             document.getElementById("form_code").disabled = false;
             document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-user-plus me-2"></i> Thêm mới Sinh viên';
             formModal.show();
         }
+
+        // Xóa các thông báo lỗi hiện tại
+        function clearErrors() {
+            document.getElementById("form-error-board").style.display = "none";
+            document.getElementById("error-list").innerHTML = "";
+            const inputs = document.querySelectorAll("#studentForm .form-control, #studentForm .form-select");
+            inputs.forEach(input => input.classList.remove("is-invalid"));
+        }
+
+        // Hiển thị danh sách lỗi lên bảng
+        function showErrors(errors) {
+            const board = document.getElementById("form-error-board");
+            const list = document.getElementById("error-list");
+            list.innerHTML = "";
+            
+            if (Array.isArray(errors)) {
+                errors.forEach(err => {
+                    const li = document.createElement("li");
+                    li.textContent = err;
+                    list.appendChild(li);
+                });
+            } else if (typeof errors === 'string') {
+                const li = document.createElement("li");
+                li.textContent = errors;
+                list.appendChild(li);
+            } else {
+                const li = document.createElement("li");
+                li.textContent = "Đã xảy ra lỗi không xác định. Vui lòng kiểm tra lại dữ liệu.";
+                list.appendChild(li);
+            }
+            
+            board.style.display = "block";
+            board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Tự động validate khi người dùng nhập liệu
+        document.querySelectorAll("#studentForm input, #studentForm select").forEach(input => {
+            input.addEventListener("input", function() {
+                if (this.checkValidity()) {
+                    this.classList.remove("is-invalid");
+                    this.classList.add("is-valid");
+                } else {
+                    this.classList.remove("is-valid");
+                    this.classList.add("is-invalid");
+                }
+            });
+            
+            input.addEventListener("change", function() {
+                if (this.checkValidity()) {
+                    this.classList.remove("is-invalid");
+                    this.classList.add("is-valid");
+                } else {
+                    this.classList.remove("is-valid");
+                    this.classList.add("is-invalid");
+                }
+            });
+        });
 
         function formatDateToInput(dateStr) {
             if (!dateStr) return "";
@@ -365,6 +445,7 @@
 
         async function openEditModal(event, studentCode) {
             if (event) event.stopPropagation();
+            clearErrors();
 
             const res = await fetch(`/api/students/${studentCode}`);
             const student = await res.json();
@@ -372,19 +453,20 @@
 
             const form = document.getElementById("studentForm");
             form.classList.remove('was-validated');
+            form.classList.remove('is-invalid');
 
             document.getElementById("form_mode").value = "edit";
             document.getElementById("form_id").value = student.id;
             document.getElementById("form_code").value = student.code;
             document.getElementById("form_code").disabled = true;
-            document.getElementById("form_full_name").value = student.full_name;
-            document.getElementById("form_date_of_birth").value = formatDateToInput(student.date_of_birth);
+            document.getElementById("form_full_name").value = student.fullName;
+            document.getElementById("form_date_of_birth").value = formatDateToInput(student.dateOfBirth);
             document.getElementById("form_gender").value = student.gender || '';
-            document.getElementById("form_personal_identification_number").value = student.personal_identification_number || '';
-            document.getElementById("form_date_of_issue").value = formatDateToInput(student.date_of_issue);
-            document.getElementById("form_card_place").value = student.card_place || '';
+            document.getElementById("form_personal_identification_number").value = student.personalIdentificationNumber || '';
+            document.getElementById("form_date_of_issue").value = formatDateToInput(student.dateOfIssue);
+            document.getElementById("form_card_place").value = student.cardPlace || '';
             document.getElementById("form_address").value = student.address || '';
-            document.getElementById("form_current_address").value = student.current_address || '';
+            document.getElementById("form_current_address").value = student.currentAddress || '';
             document.getElementById("form_status").value = student.status;
             document.getElementById("form_student_classe_id").value = student.studentClasseId || '';
             document.getElementById("form_academic_year_id").value = student.academicYearId || '';
@@ -398,27 +480,48 @@
         }
 
         async function saveStudent() {
+            clearErrors();
             const form = document.getElementById("studentForm");
+            
+            // Kiểm tra validate phía client
             if (!form.checkValidity()) {
+                const invalidInputs = form.querySelectorAll(":invalid");
+                const errorMessages = [];
+                
+                invalidInputs.forEach(input => {
+                    input.classList.add("is-invalid");
+                    // Ưu tiên lấy nội dung lỗi từ thẻ invalid-feedback ngay sau input
+                    const feedback = input.parentElement.querySelector('.invalid-feedback');
+                    if (feedback) {
+                        errorMessages.push(feedback.textContent);
+                    } else {
+                        const label = input.previousElementSibling ? input.previousElementSibling.textContent.replace('*', '').trim() : "Trường dữ liệu";
+                        errorMessages.push(`${label} không hợp lệ`);
+                    }
+                });
+                
+                showErrors(errorMessages);
                 form.classList.add('was-validated');
                 return;
             }
 
             const id = document.getElementById("form_id").value;
+            const admissionDate = document.getElementById("form_admission_year").value;
             const newData = {
                 code: document.getElementById("form_code").value.trim().toUpperCase(),
-                full_name: document.getElementById("form_full_name").value.trim(),
-                date_of_birth: document.getElementById("form_date_of_birth").value,
+                fullName: document.getElementById("form_full_name").value.trim(),
+                dateOfBirth: document.getElementById("form_date_of_birth").value,
                 gender: document.getElementById("form_gender").value,
-                personal_identification_number: document.getElementById("form_personal_identification_number").value.trim(),
-                date_of_issue: document.getElementById("form_date_of_issue").value,
-                card_place: document.getElementById("form_card_place").value.trim(),
+                personalIdentificationNumber: document.getElementById("form_personal_identification_number").value.trim(),
+                dateOfIssue: document.getElementById("form_date_of_issue").value,
+                cardPlace: document.getElementById("form_card_place").value.trim(),
                 address: document.getElementById("form_address").value.trim(),
-                current_address: document.getElementById("form_current_address").value.trim(),
+                currentAddress: document.getElementById("form_current_address").value.trim(),
                 status: document.getElementById("form_status").value,
                 studentClasseId: document.getElementById("form_student_classe_id").value,
                 academicYearId: document.getElementById("form_academic_year_id").value,
-                admissionYear: document.getElementById("form_admission_year").value,
+                // Chuyển LocalDate sang LocalDateTime (thêm giờ mặc định 00:00:00)
+                admissionYear: admissionDate ? `${admissionDate}T00:00:00` : null,
                 departmentId: document.getElementById("form_department_id").value,
                 majorId: document.getElementById("form_major_id").value,
                 trainingProgramId: document.getElementById("form_training_program_id").value,
@@ -428,19 +531,36 @@
             const url = mode === "add" ? '/api/students' : `/api/students/${id}`;
             const method = mode === "add" ? 'POST' : 'PUT';
 
-            const res = await fetch(url, { 
-                method: method, 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(newData) 
-            });
+            try {
+                const res = await fetch(url, { 
+                    method: method, 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(newData) 
+                });
 
-            if (res.ok) {
-                alert(mode === "add" ? "Thêm sinh viên thành công!" : "Cập nhật sinh viên thành công!");
-                formModal.hide();
-                renderTable();
-            } else {
-                const err = await res.json();
-                alert("Lỗi: " + (err.message || "Không thể lưu dữ liệu"));
+                if (res.ok) {
+                    alert(mode === "add" ? "Đã thêm sinh viên thành công!" : "Đã cập nhật thông tin thành công!");
+                    formModal.hide();
+                    renderTable();
+                } else {
+                    const err = await res.json();
+                    if (err.errors) {
+                        showErrors(err.errors);
+                    } else {
+                        // Xử lý dịch thuật các lỗi kỹ thuật JSON parse
+                        let msg = err.message || "";
+                        if (msg.includes("JSON parse error") || msg.includes("deserialize")) {
+                            msg = "Dữ liệu nhập vào không đúng định dạng (ví dụ: ngày tháng chưa hợp lệ).";
+                        } else if (msg.includes("exists")) {
+                            msg = "Mã số sinh viên này đã tồn tại trên hệ thống.";
+                        } else if (!msg) {
+                            msg = "Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng kiểm tra lại.";
+                        }
+                        showErrors(msg);
+                    }
+                }
+            } catch (error) {
+                showErrors("Lỗi kết nối mạng. Vui lòng kiểm tra lại đường truyền internet hoặc thử lại sau.");
             }
         }
     </script>
