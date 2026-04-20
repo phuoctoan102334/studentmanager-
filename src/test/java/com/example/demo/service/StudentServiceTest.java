@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class StudentServiceTest {
 
     @Mock private StudentRepository studentRepo;
@@ -115,23 +115,28 @@ public class StudentServiceTest {
     }
 
     @Test
-    void update_ShouldNotUpdateSectionHistory_WhenClassIsChanged() {
-        // This test demonstrates a potential bug where update() only changes the students table
-        // but doesn't record the history in student_class_sections, unlike transfer().
-        
+    void update_ShouldMaintainSectionHistory_WhenClassIsChanged() {
         UUID newClassId = UUID.randomUUID();
         StudentClass newClass = new StudentClass(); newClass.setId(newClassId);
         
         saveDTO.setStudentClasseId(newClassId);
         
+        StudentClassSection oldSection = StudentClassSection.builder()
+                .student(student)
+                .isActive(true)
+                .build();
+
         when(studentRepo.findById(student.getId())).thenReturn(Optional.of(student));
         when(classRepo.findById(newClassId)).thenReturn(Optional.of(newClass));
+        when(sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(student.getId()))
+                .thenReturn(Optional.of(oldSection));
         when(studentRepo.save(any(Student.class))).thenAnswer(i -> i.getArgument(0));
 
         studentService.update(student.getId(), saveDTO, null);
 
         assertThat(student.getStudentClass()).isEqualTo(newClass);
-        // This is the "bug": sectionRepo.save() is NEVER called in update()
-        verify(sectionRepo, never()).save(any(StudentClassSection.class));
+        assertThat(oldSection.getIsActive()).isFalse();
+        assertThat(oldSection.getEndDate()).isNotNull();
+        verify(sectionRepo, times(2)).save(any(StudentClassSection.class)); // 1 for old close, 1 for new open
     }
 }

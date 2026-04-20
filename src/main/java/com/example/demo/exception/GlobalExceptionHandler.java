@@ -10,6 +10,19 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        Map<String, String> error = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((err) -> {
+            String fieldName = ((org.springframework.validation.FieldError) err).getField();
+            String errorMessage = err.getDefaultMessage();
+            error.put(fieldName, errorMessage);
+        });
+        error.put("status", "error");
+        error.put("message", "Dữ liệu không hợp lệ");
+        return ResponseEntity.badRequest().body(error);
+    }
+
     @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(org.springframework.http.converter.HttpMessageNotReadableException ex) {
         Map<String, String> error = new HashMap<>();

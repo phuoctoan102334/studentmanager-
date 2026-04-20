@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class StudentClassServiceImpl implements StudentClassService {
 
     private final StudentClassRepository classRepo;
+    private final StudentClassSectionRepository sectionRepo;
     private final DepartmentRepository departmentRepo;
     private final MajorRepository majorRepo;
     private final AcademicYearRepository academicYearRepo;
@@ -49,6 +50,7 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public StudentClassDetailDTO create(StudentClassSaveDTO dto, UUID createdBy) {
         if (classRepo.existsByCode(dto.getCode())) {
             throw new RuntimeException("Mã lớp đã tồn tại: " + dto.getCode());
@@ -61,6 +63,7 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public StudentClassDetailDTO update(UUID id, StudentClassSaveDTO dto, UUID updatedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         StudentClass sc = classRepo.findById(id)
@@ -72,10 +75,18 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public void delete(UUID id, UUID deletedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         StudentClass sc = classRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp: " + id));
+        
+        // Kiểm tra xem có sinh viên nào đang hoạt động trong lớp không thông qua bảng section
+        boolean hasActiveStudents = !sectionRepo.findByStudentClass_IdAndIsActiveTrueOrderByStudent_Code(id).isEmpty();
+        if (hasActiveStudents) {
+             throw new RuntimeException("Không thể xóa lớp đang có sinh viên hoạt động");
+        }
+
         sc.setDeletedAt(LocalDateTime.now());
         sc.setDeletedBy(deletedBy);
         sc.setIsActive(false);
@@ -83,11 +94,13 @@ public class StudentClassServiceImpl implements StudentClassService {
     }
 
     @Override
+    @SuppressWarnings("null")
     public List<StudentClassListDTO> search(String keyword, UUID departmentId, UUID majorId) {
         return classRepo.search(keyword, departmentId, majorId)
                 .stream().map(this::toListDTO).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     private void mapFromDTO(StudentClass sc, StudentClassSaveDTO dto) {
         sc.setCode(dto.getCode());
         sc.setName(dto.getName());

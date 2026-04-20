@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class AdvisorServiceTest {
 
     @Mock private AdvisorClassSectionRepository advisorSectionRepo;
@@ -60,5 +61,26 @@ public class AdvisorServiceTest {
         assertThat(oldSection.getIsActive()).isFalse();
         assertThat(oldSection.getEndDate()).isNotNull();
         verify(advisorSectionRepo, times(2)).save(any(AdvisorClassSection.class));
+    }
+
+    @Test
+    void assignAdvisor_ShouldNotCreateNew_WhenSameAdvisorAlreadyActive() {
+        // This test detects a bug where re-assigning the same advisor 
+        // creates a new history record unnecessarily.
+        
+        Employee currentEmp = new Employee(); currentEmp.setId(employeeId);
+        AdvisorClassSection activeSection = new AdvisorClassSection();
+        activeSection.setEmployee(currentEmp);
+        activeSection.setIsActive(true);
+
+        when(advisorSectionRepo.findByStudentClass_IdAndIsActiveTrueAndEndDateIsNull(classId))
+                .thenReturn(Optional.of(activeSection));
+        
+        // If it's the same advisor, we should probably just do nothing or return.
+        
+        advisorService.assignAdvisor(saveDTO, null);
+        
+        assertThat(activeSection.getIsActive()).isTrue(); 
+        verify(advisorSectionRepo, never()).save(any(AdvisorClassSection.class));
     }
 }

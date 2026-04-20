@@ -34,18 +34,27 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public void assignAdvisor(AdvisorSectionSaveDTO dto, UUID createdBy) {
         Objects.requireNonNull(dto.getStudentClassId(), "Mã lớp không được để trống");
         Objects.requireNonNull(dto.getEmployeeId(), "Mã nhân viên không được để trống");
 
-        // Đóng phân công cũ nếu có
-        advisorSectionRepo.findByStudentClass_IdAndIsActiveTrueAndEndDateIsNull(dto.getStudentClassId())
-                .ifPresent(old -> {
-                    old.setEndDate(LocalDateTime.now());
-                    old.setIsActive(false);
-                    old.setUpdatedBy(createdBy);
-                    advisorSectionRepo.save(old);
-                });
+        // Kiểm tra phân công hiện tại
+        var currentActive = advisorSectionRepo.findByStudentClass_IdAndIsActiveTrueAndEndDateIsNull(dto.getStudentClassId());
+        
+        if (currentActive.isPresent()) {
+            AdvisorClassSection old = currentActive.get();
+            // Nếu là cùng một nhân viên thì không làm gì cả
+            if (old.getEmployee() != null && old.getEmployee().getId().equals(dto.getEmployeeId())) {
+                return;
+            }
+            
+            // Nếu là nhân viên khác, đóng phân công cũ
+            old.setEndDate(LocalDateTime.now());
+            old.setIsActive(false);
+            old.setUpdatedBy(createdBy);
+            advisorSectionRepo.save(old);
+        }
 
         Employee emp = employeeRepo.findById(dto.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
@@ -65,6 +74,7 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public void endAssignment(UUID sectionId, UUID updatedBy) {
         AdvisorClassSection section = advisorSectionRepo.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi phân công"));

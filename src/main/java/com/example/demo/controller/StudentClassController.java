@@ -40,12 +40,12 @@ public class StudentClassController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentClassDetailDTO> create(@RequestBody StudentClassSaveDTO dto) {
+    public ResponseEntity<StudentClassDetailDTO> create(@jakarta.validation.Valid @RequestBody StudentClassSaveDTO dto) {
         return ResponseEntity.ok(classService.create(dto, null));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentClassDetailDTO> update(@PathVariable UUID id, @RequestBody StudentClassSaveDTO dto) {
+    public ResponseEntity<StudentClassDetailDTO> update(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody StudentClassSaveDTO dto) {
         return ResponseEntity.ok(classService.update(id, dto, null));
     }
 

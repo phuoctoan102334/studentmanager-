@@ -13,10 +13,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(StudentController.class)
 @Import(GlobalExceptionHandler.class)
+@SuppressWarnings("null")
 public class StudentControllerTest {
 
     @Autowired
@@ -35,11 +36,18 @@ public class StudentControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void create_ShouldReturnStudent_WhenValid() throws Exception {
+    private StudentSaveDTO createValidDTO() {
         StudentSaveDTO dto = new StudentSaveDTO();
         dto.setCode("S001");
         dto.setFullName("John Doe");
+        dto.setDateOfBirth(LocalDate.of(2000, 1, 1));
+        dto.setGender("1");
+        return dto;
+    }
+
+    @Test
+    void create_ShouldReturnStudent_WhenValid() throws Exception {
+        StudentSaveDTO dto = createValidDTO();
 
         StudentDetailDTO result = new StudentDetailDTO();
         result.setId(UUID.randomUUID());
@@ -57,9 +65,25 @@ public class StudentControllerTest {
     }
 
     @Test
-    void create_ShouldReturnError_WhenServiceThrows() throws Exception {
+    void create_ShouldReturnBadRequest_WhenValidationFails() throws Exception {
         StudentSaveDTO dto = new StudentSaveDTO();
-        dto.setCode("EXISTS");
+        dto.setCode(""); // Blank code
+        dto.setFullName(""); // Blank name
+        // dateOfBirth is null
+
+        mockMvc.perform(post("/api/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.code").value("Mã sinh viên không được để trống"))
+                .andExpect(jsonPath("$.fullName").value("Họ tên không được để trống"))
+                .andExpect(jsonPath("$.dateOfBirth").value("Ngày sinh không được để trống"));
+    }
+
+    @Test
+    void create_ShouldReturnError_WhenServiceThrows() throws Exception {
+        StudentSaveDTO dto = createValidDTO();
 
         when(studentService.create(any(StudentSaveDTO.class), any()))
                 .thenThrow(new RuntimeException("Mã sinh viên đã tồn tại: EXISTS"));
@@ -74,10 +98,8 @@ public class StudentControllerTest {
 
     @Test
     void create_ShouldHandleDataIntegrityViolation() throws Exception {
-        StudentSaveDTO dto = new StudentSaveDTO();
+        StudentSaveDTO dto = createValidDTO();
         
-        // Mocking DataIntegrityViolationException is a bit tricky because of how Spring wraps it
-        // but let's try to throw a RuntimeException that matches the handler's logic
         when(studentService.create(any(StudentSaveDTO.class), any()))
                 .thenThrow(new RuntimeException("could not execute statement; CK_stu_gender"));
 

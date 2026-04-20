@@ -19,9 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class StudentClassServiceTest {
 
     @Mock private StudentClassRepository classRepo;
+    @Mock private StudentRepository studentRepo;
     @Mock private StudentClassSectionRepository sectionRepo; // Needed to check for students
     @Mock private DepartmentRepository departmentRepo;
     @Mock private MajorRepository majorRepo;
@@ -44,12 +46,26 @@ public class StudentClassServiceTest {
     }
 
     @Test
-    void delete_ShouldSoftDeleteWithoutCheckingStudents() {
-        // This test shows that delete() doesn't check for active students in the class
+    void delete_ShouldThrowException_WhenStudentsExist() {
         when(classRepo.findById(studentClass.getId())).thenReturn(Optional.of(studentClass));
         
-        // Even if we have students (we can't easily mock this since sectionRepo is not used in delete)
-        // the current implementation will still delete the class.
+        // Giả lập có 1 section đang hoạt động trong lớp
+        StudentClassSection section = new StudentClassSection();
+        when(sectionRepo.findByStudentClass_IdAndIsActiveTrueOrderByStudent_Code(studentClass.getId()))
+                .thenReturn(Collections.singletonList(section));
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> classService.delete(studentClass.getId(), null))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Không thể xóa lớp đang có sinh viên hoạt động");
+        
+        verify(classRepo, never()).save(any(StudentClass.class));
+    }
+
+    @Test
+    void delete_ShouldSoftDelete_WhenNoActiveStudents() {
+        when(classRepo.findById(studentClass.getId())).thenReturn(Optional.of(studentClass));
+        when(sectionRepo.findByStudentClass_IdAndIsActiveTrueOrderByStudent_Code(studentClass.getId()))
+                .thenReturn(Collections.emptyList());
         
         classService.delete(studentClass.getId(), null);
         

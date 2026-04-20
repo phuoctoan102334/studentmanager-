@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public StudentDetailDTO create(StudentSaveDTO dto, UUID createdBy) {
         if (studentRepo.existsByCode(dto.getCode())) {
             throw new RuntimeException("Mã sinh viên đã tồn tại: " + dto.getCode());
@@ -83,8 +85,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public StudentDetailDTO update(UUID id, StudentSaveDTO dto, UUID updatedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
+        Objects.requireNonNull(dto, "Dữ liệu cập nhật không được để trống");
+        
         Student s = studentRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sinh viên: " + id));
         
@@ -94,17 +99,19 @@ public class StudentServiceImpl implements StudentService {
         mapFromDTO(s, dto);
         s.setUpdatedBy(updatedBy);
 
-        // Xử lý logic thay đổi lớp nếu có
-        if (!Objects.equals(oldClassId, newClassId)) {
-            // Đóng section cũ
-            sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(id)
-                    .ifPresent(old -> {
-                        old.setEndDate(LocalDateTime.now());
-                        old.setStatus("completed");
-                        old.setIsActive(false);
-                        old.setUpdatedBy(updatedBy);
-                        sectionRepo.save(old);
-                    });
+        // Xử lý logic thay đổi lớp hoặc tạo section nếu chưa có (Point 1 & 3)
+        // Kiểm tra xem có đang có section active không
+        Optional<StudentClassSection> currentSection = sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(id);
+        
+        if (!Objects.equals(oldClassId, newClassId) || (newClassId != null && currentSection.isEmpty())) {
+            // Đóng section cũ nếu có
+            currentSection.ifPresent(old -> {
+                old.setEndDate(LocalDateTime.now());
+                old.setStatus("completed");
+                old.setIsActive(false);
+                old.setUpdatedBy(updatedBy);
+                sectionRepo.save(old);
+            });
 
             // Nếu có lớp mới, tạo section mới
             if (newClassId != null) {
@@ -131,6 +138,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public void delete(UUID id, UUID deletedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         Student s = studentRepo.findById(id)
@@ -142,6 +150,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @SuppressWarnings("null")
     public List<StudentListDTO> search(String keyword, UUID departmentId, UUID majorId, String status, UUID classId) {
         return studentRepo.search(keyword, departmentId, majorId, status, classId)
                 .stream().map(this::toListDTO).collect(Collectors.toList());
@@ -149,7 +158,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public void transfer(StudentTransferDTO dto, UUID doneBy) {
+        Objects.requireNonNull(dto, "Dữ liệu chuyển lớp không được để trống");
         Objects.requireNonNull(dto.getStudentId(), "Mã sinh viên không được để trống");
         Objects.requireNonNull(dto.getNewClassId(), "Mã lớp mới không được để trống");
 
@@ -189,6 +200,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     // ---- Mapper helpers ----
+    @SuppressWarnings("null")
     private void mapFromDTO(Student s, StudentSaveDTO dto) {
         s.setCode(dto.getCode());
         s.setFullName(dto.getFullName());

@@ -43,13 +43,13 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentDetailDTO> create(@RequestBody StudentSaveDTO dto) {
+    public ResponseEntity<StudentDetailDTO> create(@jakarta.validation.Valid @RequestBody StudentSaveDTO dto) {
         // Mặc định createdBy là null hoặc lấy từ session/auth nếu có
         return ResponseEntity.ok(studentService.create(dto, null));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentDetailDTO> update(@PathVariable UUID id, @RequestBody StudentSaveDTO dto) {
+    public ResponseEntity<StudentDetailDTO> update(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody StudentSaveDTO dto) {
         return ResponseEntity.ok(studentService.update(id, dto, null));
     }
 
@@ -60,7 +60,7 @@ public class StudentController {
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@RequestBody StudentTransferDTO dto) {
+    public ResponseEntity<Void> transfer(@jakarta.validation.Valid @RequestBody StudentTransferDTO dto) {
         studentService.transfer(dto, null);
         return ResponseEntity.ok().build();
     }
