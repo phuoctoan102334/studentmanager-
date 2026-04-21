@@ -95,7 +95,7 @@
                         <div class="row">
                             <div class="col-md-3"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
                             <div class="col-md-3"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academicYearName"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academicYear"></div></div>
                             <div class="col-md-3"><span class="detail-label">Ngày nhập học</span><div class="detail-value" id="detail-admissionYear"></div></div>
                             <div class="col-md-4"><span class="detail-label">Khoa (departmentName)</span><div class="detail-value" id="detail-departmentName"></div></div>
                             <div class="col-md-4"><span class="detail-label">Ngành (majorName)</span><div class="detail-value" id="detail-majorName"></div></div>
@@ -311,33 +311,50 @@
         }
 
         async function renderTable() {
-            const students = await fetchStudents();
             const tableBody = document.getElementById("student-table-body");
-            tableBody.innerHTML = "";
+            // Hiển thị trạng thái đang tải
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải dữ liệu...</p></td></tr>`;
+            
+            try {
+                const students = await fetchStudents();
+                if (!students || students.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu sinh viên nào.</td></tr>`;
+                    return;
+                }
 
-            students.forEach(student => {
-                let badgeClass = "bg-success";
-                if (student.status === "reserved") badgeClass = "bg-secondary";
-                else if (student.status === "dropout") badgeClass = "bg-danger";
-                else if (student.status === "graduated") badgeClass = "bg-info text-dark";
+                // Sử dụng DocumentFragment để tối ưu hiệu năng render (chỉ reflow 1 lần duy nhất)
+                const fragment = document.createDocumentFragment();
+                
+                students.forEach(student => {
+                    let badgeClass = "bg-success";
+                    if (student.status === "reserved") badgeClass = "bg-secondary";
+                    else if (student.status === "dropout") badgeClass = "bg-danger";
+                    else if (student.status === "graduated") badgeClass = "bg-info text-dark";
 
-                const tr = document.createElement("tr");
-                tr.className = "clickable-row";
-                tr.onclick = () => showDetail(student.code);
-                tr.innerHTML = `
-                    <td class="ps-4 fw-bold">${student.code}</td>
-                    <td class="text-primary fw-medium">${student.fullName}</td>
-                    <td>${student.dateOfBirth || ''}</td>
-                    <td>${student.studentClassName || ''}</td>
-                    <td><span class="badge ${badgeClass}">${student.status}</span></td>
-                    <td class="text-center">
-                        <button class="btn btn-warning btn-action text-dark border-0"
-                                onclick="openEditModal(event, '${student.code}')" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>`;
-                tableBody.appendChild(tr);
-            });
+                    const tr = document.createElement("tr");
+                    tr.className = "clickable-row";
+                    tr.onclick = () => showDetail(student.code);
+                    tr.innerHTML = `
+                        <td class="ps-4 fw-bold">${student.code}</td>
+                        <td class="text-primary fw-medium">${student.fullName}</td>
+                        <td>${student.dateOfBirth || ''}</td>
+                        <td>${student.studentClassName || ''}</td>
+                        <td><span class="badge ${badgeClass}">${student.status}</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-action text-dark border-0"
+                                    onclick="openEditModal(event, '${student.code}')" title="Chỉnh sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>`;
+                    fragment.appendChild(tr);
+                });
+
+                tableBody.innerHTML = "";
+                tableBody.appendChild(fragment);
+            } catch (error) {
+                console.error("Lỗi khi tải bảng:", error);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle me-2"></i>Không thể tải dữ liệu. Vui lòng thử lại.</td></tr>`;
+            }
         }
 
         async function showDetail(studentCode) {
@@ -351,10 +368,15 @@
                     if (key === 'status') {
                         let bClass = student.status === "reserved" ? "bg-secondary" : student.status === "dropout" ? "bg-danger" : student.status === "graduated" ? "bg-info text-dark" : "bg-success";
                         element.innerHTML = `<span class="badge ${bClass}">${student.status}</span>`;
+                    } else if (key === 'gender') {
+                        let gText = "Khác";
+                        if (student.gender === "1") gText = "Nam";
+                        else if (student.gender === "2") gText = "Nữ";
+                        element.textContent = gText;
                     } else if (key === 'isActive') {
                         element.innerHTML = student.isActive ? `<span class="badge bg-primary">Hoạt động</span>` : `<span class="badge bg-secondary">Khóa</span>`;
                     } else {
-                        element.textContent = student[key] || '';
+                        element.textContent = student[key] || '---';
                     }
                 }
             });
@@ -438,6 +460,10 @@
 
         function formatDateToInput(dateStr) {
             if (!dateStr) return "";
+            if (dateStr.includes('-')) {
+                // Nếu đã là yyyy-MM-dd (có dấu gạch ngang) hoặc ISO
+                return dateStr.split('T')[0];
+            }
             const parts = dateStr.split('/');
             if (parts.length !== 3) return "";
             return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;

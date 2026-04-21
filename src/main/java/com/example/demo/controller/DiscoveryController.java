@@ -26,16 +26,21 @@ public class DiscoveryController {
     public Map<String, List<?>> getOptions() {
         return Map.of(
             "departments", departmentRepo.findAll().stream()
+                .filter(d -> d.getIsActive() != null && d.getIsActive())
                 .map(d -> Map.of("id", d.getId(), "name", d.getName())).collect(Collectors.toList()),
             "majors", majorRepo.findAll().stream()
+                .filter(m -> m.getIsActive() != null && m.getIsActive())
                 .map(m -> Map.of("id", m.getId(), "name", m.getMajorName())).collect(Collectors.toList()),
             "academicYears", academicYearRepo.findAll().stream()
+                .filter(a -> a.getIsActive() != null && a.getIsActive())
                 .map(a -> Map.of("id", a.getId(), "name", a.getAcademicYear())).collect(Collectors.toList()),
             "classes", classRepo.findByIsActiveTrueAndDeletedAtIsNull().stream()
                 .map(c -> Map.of("id", c.getId(), "name", c.getName(), "code", c.getCode())).collect(Collectors.toList()),
             "programs", trainingProgramRepo.findAll().stream()
+                .filter(p -> p.getIsActive() != null && p.getIsActive())
                 .map(p -> Map.of("id", p.getId(), "name", p.getProgramName())).collect(Collectors.toList()),
             "employees", employeeRepo.findAll().stream()
+                .filter(e -> e.getIsActive() != null && e.getIsActive())
                 .map(e -> Map.of("id", e.getId(), "name", e.getFullName())).collect(Collectors.toList())
         );
     }

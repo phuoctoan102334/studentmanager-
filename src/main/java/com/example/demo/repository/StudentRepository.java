@@ -16,6 +16,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     Optional<Student> findByCodeAndDeletedAtIsNull(String code);
 
+    @Query("SELECT s FROM Student s LEFT JOIN FETCH s.studentClass WHERE s.isActive = true AND s.deletedAt IS NULL ORDER BY s.code")
     List<Student> findByIsActiveTrueAndDeletedAtIsNull();
 
     @Query("""

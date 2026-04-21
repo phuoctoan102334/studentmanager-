@@ -2,7 +2,6 @@ package com.example.demo.dto.student;
 
 import lombok.Data;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -18,7 +17,7 @@ public class StudentDetailDTO {
     private String address;
     private String currentAddress;
     private String status;
-    private LocalDateTime admissionYear;
+    private LocalDate admissionYear;
     private Boolean isActive;
     
     private UUID departmentId;

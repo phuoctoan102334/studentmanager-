@@ -16,20 +16,26 @@ public class StudentClassAdvisorController {
 
     private final AdvisorClassSectionService advisorService;
 
+    @GetMapping
+    public ResponseEntity<List<AdvisorSectionListDTO>> getAll() {
+        return ResponseEntity.ok(advisorService.getAll());
+    }
+
     @GetMapping("/class/{classId}")
     public ResponseEntity<List<AdvisorSectionListDTO>> getByClass(@PathVariable UUID classId) {
         return ResponseEntity.ok(advisorService.getByClass(classId));
     }
 
-    @PostMapping("/assign")
+    @PostMapping
     public ResponseEntity<Void> assign(@RequestBody AdvisorSectionSaveDTO dto) {
         advisorService.assignAdvisor(dto, null);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/end/{id}")
-    public ResponseEntity<Void> endAssignment(@PathVariable UUID id) {
-        advisorService.endAssignment(id, null);
+    public ResponseEntity<Void> endAssignment(@PathVariable UUID id, @RequestBody AdvisorSectionEndDTO dto) {
+        dto.setId(id);
+        advisorService.endAssignment(dto, null);
         return ResponseEntity.ok().build();
     }
 }

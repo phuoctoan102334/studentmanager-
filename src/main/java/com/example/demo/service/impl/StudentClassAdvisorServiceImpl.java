@@ -27,6 +27,12 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
     private final StudentClassRepository classRepo;
 
     @Override
+    public List<AdvisorSectionListDTO> getAll() {
+        return advisorSectionRepo.findAllByDeletedAtIsNull()
+                .stream().map(this::toListDTO).collect(Collectors.toList());
+    }
+
+    @Override
     public List<AdvisorSectionListDTO> getByClass(UUID classId) {
         return advisorSectionRepo.findByStudentClass_IdOrderByStartDateDesc(classId)
                 .stream().map(this::toListDTO).collect(Collectors.toList());
@@ -75,10 +81,15 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
     @Override
     @Transactional
     @SuppressWarnings("null")
-    public void endAssignment(UUID sectionId, UUID updatedBy) {
-        AdvisorClassSection section = advisorSectionRepo.findById(sectionId)
+    public void endAssignment(AdvisorSectionEndDTO dto, UUID updatedBy) {
+        AdvisorClassSection section = advisorSectionRepo.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi phân công"));
-        section.setEndDate(LocalDateTime.now());
+        
+        LocalDateTime endDateTime = dto.getEndDate() != null 
+                ? dto.getEndDate().atStartOfDay() 
+                : LocalDateTime.now();
+                
+        section.setEndDate(endDateTime);
         section.setIsActive(false);
         section.setUpdatedBy(updatedBy);
         advisorSectionRepo.save(section);
@@ -96,8 +107,13 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
             d.setStudentClassId(acs.getStudentClass().getId());
             d.setStudentClassName(acs.getStudentClass().getName());
         }
-        d.setStartDate(acs.getStartDate());
-        d.setEndDate(acs.getEndDate());
+        d.setStartDate(acs.getStartDate() != null ? acs.getStartDate().toLocalDate() : null);
+        d.setEndDate(acs.getEndDate() != null ? acs.getEndDate().toLocalDate() : null);
+        d.setIsActive(acs.getIsActive());
+        d.setCreatedAt(acs.getCreatedAt());
+        d.setCreatedBy(acs.getCreatedBy());
+        d.setUpdatedAt(acs.getUpdatedAt());
+        d.setUpdatedBy(acs.getUpdatedBy());
         return d;
     }
 }

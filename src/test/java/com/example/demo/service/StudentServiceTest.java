@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -102,7 +103,7 @@ public class StudentServiceTest {
         when(studentRepo.findById(student.getId())).thenReturn(Optional.of(student));
         when(classRepo.findById(newClassId)).thenReturn(Optional.of(newClass));
         when(sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(student.getId()))
-                .thenReturn(Optional.of(oldSection));
+                .thenReturn(List.of(oldSection));
 
         studentService.transfer(transferDTO, null);
 
@@ -129,7 +130,7 @@ public class StudentServiceTest {
         when(studentRepo.findById(student.getId())).thenReturn(Optional.of(student));
         when(classRepo.findById(newClassId)).thenReturn(Optional.of(newClass));
         when(sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(student.getId()))
-                .thenReturn(Optional.of(oldSection));
+                .thenReturn(List.of(oldSection));
         when(studentRepo.save(any(Student.class))).thenAnswer(i -> i.getArgument(0));
 
         studentService.update(student.getId(), saveDTO, null);

@@ -51,7 +51,7 @@
             </div>
             <div class="card-body p-0">
                 <table class="table table-modern table-hover mb-0">
-                    <thead><tr><th class="ps-4">Mã SV</th><th>Tên Sinh viên</th><th>Lớp (Class)</th><th>Trạng thái (status)</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
+                    <thead><tr><th class="ps-4">Mã SV</th><th>Tên Sinh viên</th><th>Lớp (Class)</th><th>Chương trình</th><th>Trạng thái (status)</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
                     <tbody id="section-table-body"></tbody>
                 </table>
             </div>
@@ -72,7 +72,8 @@
                         <div class="row">
                             <div class="col-md-6"><span class="detail-label">Mã sinh viên</span><div class="detail-value text-primary fw-bold" id="detail-studentCode"></div></div>
                             <div class="col-md-6"><span class="detail-label">Họ và tên</span><div class="detail-value fw-bold" id="detail-studentFullName"></div></div>
-                            <div class="col-md-12"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Chương trình học</span><div class="detail-value text-success" id="detail-trainingProgramName"></div></div>
                             <div class="col-md-12"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
                         </div>
                         <h6 class="detail-group-title">Thời gian & Hiệu lực</h6>
@@ -141,12 +142,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let secModal, transferModal;
+        let cachedClasses = [];
+        let cachedStudents = [];
+        let currentSections = []; // Lưu trữ sinh viên của lớp đang chọn
 
         document.addEventListener("DOMContentLoaded", async () => {
             secModal = new bootstrap.Modal(document.getElementById('sectionDetailModal'));
             transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
 
-            await loadClassOptions();
+            // Tải dữ liệu danh mục một lần duy nhất
+            await Promise.all([
+                loadClassOptions(),
+                preloadStudents()
+            ]);
 
             const params = new URLSearchParams(window.location.search);
             if (params.get('classId')) {
@@ -156,17 +164,26 @@
             renderTable();
         });
 
+        async function preloadStudents() {
+            try {
+                const res = await fetch('/api/students');
+                cachedStudents = await res.json();
+            } catch (e) { console.error("Không thể tải danh sách sinh viên:", e); }
+        }
+
         async function loadClassOptions() {
             try {
                 const res = await fetch('/api/classes');
-                const classes = await res.json();
+                cachedClasses = await res.json();
                 const filter = document.getElementById('class-filter');
-                classes.forEach(c => {
+                const fragment = document.createDocumentFragment();
+                cachedClasses.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.id;
                     opt.textContent = `${c.code} - ${c.name}`;
-                    filter.appendChild(opt);
+                    fragment.appendChild(opt);
                 });
+                filter.appendChild(fragment);
             } catch (error) {
                 console.error("Lỗi khi tải danh sách lớp:", error);
             }
@@ -181,46 +198,67 @@
 
         async function renderTable() {
             const classId = document.getElementById('class-filter').value;
-            const sections = await fetchSections(classId);
             const tbody = document.getElementById("section-table-body");
-            tbody.innerHTML = "";
-
-            if (sections.length === 0 && classId) {
-                tbody.innerHTML = `<tr><td colspan="7" class="ps-4 py-4 text-muted fst-italic">Lớp này chưa có sinh viên nào được phân vào.</td></tr>`;
+            
+            if (!classId) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Vui lòng chọn một lớp để xem danh sách sinh viên.</td></tr>`;
+                currentSections = [];
                 return;
             }
 
-            sections.forEach(sec => {
-                let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
-                const tr = document.createElement("tr");
-                tr.className = "clickable-row";
-                tr.onclick = () => showDetail(sec.id, classId);
-                tr.innerHTML = `
-                    <td class="ps-4 fw-bold text-primary">${sec.studentCode}</td>
-                    <td>${sec.studentFullName}</td>
-                    <td>${sec.studentClassName}</td>
-                    <td><span class="badge ${badge} status-badge">${sec.status}</span></td>
-                    <td>${sec.startDate || ''}</td>
-                    <td>${!sec.endDate ? '<span class="text-muted fst-italic">Đang học</span>' : sec.endDate}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); showDetail('${sec.id}', '${classId}')" title="Xem chi tiết">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>`;
-                tbody.appendChild(tr);
-            });
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải danh sách...</p></td></tr>`;
+            
+            try {
+                const sections = await fetchSections(classId);
+                currentSections = sections; // Cập nhật danh sách sinh viên hiện tại
+                
+                if (sections.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="ps-4 py-4 text-muted fst-italic">Lớp này chưa có sinh viên nào được phân vào.</td></tr>`;
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                const fmtDate = (d) => d ? d.split('T')[0] : '';
+
+                sections.forEach(sec => {
+                    let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
+                    const tr = document.createElement("tr");
+                    tr.className = "clickable-row";
+                    tr.onclick = () => showDetail(sec.id, classId);
+                    
+                    tr.innerHTML = `
+                        <td class="ps-4 fw-bold text-primary">${sec.studentCode}</td>
+                        <td class="fw-medium">${sec.studentFullName}</td>
+                        <td>${sec.studentClassName || '---'}</td>
+                        <td><span class="text-muted"><i class="fas fa-graduation-cap me-1"></i>${sec.trainingProgramName}</span></td>
+                        <td><span class="badge ${badge} status-badge">${sec.status}</span></td>
+                        <td>${fmtDate(sec.startDate)}</td>
+                        <td>${!sec.endDate ? '<span class="text-muted fst-italic">Hiện tại</span>' : fmtDate(sec.endDate)}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary border-0" onclick="event.stopPropagation(); showDetail('${sec.id}', '${classId}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>`;
+                    fragment.appendChild(tr);
+                });
+
+                tbody.innerHTML = "";
+                tbody.appendChild(fragment);
+            } catch (error) {
+                console.error("Lỗi khi tải bảng phân lớp:", error);
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Không thể tải dữ liệu phân lớp.</td></tr>`;
+            }
         }
 
         async function showDetail(id, classId) {
-            const res = await fetch(`/api/student-sections/class/${classId}`);
-            const sections = await res.json();
-            const sec = sections.find(s => s.id === id);
+            const sec = currentSections.find(s => s.id === id);
             if (!sec) return;
 
             Object.keys(sec).forEach(key => {
                 const el = document.getElementById(`detail-${key}`);
                 if (el) {
                     if (key === 'isActive') el.innerHTML = sec.isActive ? '<span class="badge bg-primary">Hoạt động</span>' : '<span class="badge bg-secondary">Hết hiệu lực</span>';
+                    else if (key === 'startDate' || key === 'endDate') el.textContent = sec[key] ? sec[key] : '---';
                     else el.textContent = sec[key] || '---';
                 }
             });
@@ -254,35 +292,43 @@
         }
 
         async function openTransferModal() {
+            const classId = document.getElementById('class-filter').value;
+            if (!classId) {
+                alert("Vui lòng chọn một lớp cụ thể trước khi thực hiện nghiệp vụ chuyển lớp.");
+                return;
+            }
+
+            if (currentSections.length === 0) {
+                alert("Lớp hiện tại không có sinh viên nào để thực hiện chuyển lớp.");
+                return;
+            }
+
             const form = document.getElementById("transferForm");
             form.reset();
             form.classList.remove('was-validated');
             clearErrors();
 
-            try {
-                const [svRes, clsRes] = await Promise.all([
-                    fetch('/api/students'),
-                    fetch('/api/classes')
-                ]);
-                
-                const students = await svRes.json();
-                const selectStudent = document.getElementById('trans_student_code');
-                selectStudent.innerHTML = '<option value="">-- Tìm và chọn sinh viên --</option>';
-                students.forEach(s => {
-                    if (s.status === 'studying') {
-                        selectStudent.innerHTML += `<option value="${s.id}">${s.code} - ${s.fullName}</option>`;
-                    }
-                });
+            // Chỉ lấy sinh viên trong lớp đang chọn
+            const selectStudent = document.getElementById('trans_student_code');
+            let svHtml = '<option value="">-- Chọn sinh viên trong lớp --</option>';
+            currentSections.forEach(s => {
+                if (s.status === 'studying') {
+                    svHtml += `<option value="${s.studentId}">${s.studentCode} - ${s.studentFullName}</option>`;
+                }
+            });
+            selectStudent.innerHTML = svHtml;
 
-                const classes = await clsRes.json();
-                const selectClass = document.getElementById('trans_new_class');
-                selectClass.innerHTML = '<option value="">-- Chọn lớp đích --</option>';
-                classes.forEach(c => selectClass.innerHTML += `<option value="${c.id}">${c.code} - ${c.name}</option>`);
+            // Loại bỏ lớp hiện tại khỏi danh sách lớp đích
+            const selectClass = document.getElementById('trans_new_class');
+            let clsHtml = '<option value="">-- Chọn lớp đích --</option>';
+            cachedClasses.forEach(c => {
+                if (c.id !== classId) {
+                    clsHtml += `<option value="${c.id}">${c.code} - ${c.name}</option>`;
+                }
+            });
+            selectClass.innerHTML = clsHtml;
 
-                transferModal.show();
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu chuyển lớp:", error);
-            }
+            transferModal.show();
         }
 
         async function submitTransfer() {
@@ -315,6 +361,9 @@
                 if (res.ok) {
                     alert("Nghiệp vụ chuyển lớp đã được thực hiện thành công!");
                     transferModal.hide();
+                    
+                    // Cập nhật lại cache sinh viên sau khi chuyển lớp
+                    await preloadStudents();
                     renderTable();
                 } else {
                     const err = await res.json();

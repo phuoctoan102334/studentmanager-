@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -99,19 +98,19 @@ public class StudentServiceImpl implements StudentService {
         mapFromDTO(s, dto);
         s.setUpdatedBy(updatedBy);
 
-        // Xử lý logic thay đổi lớp hoặc tạo section nếu chưa có (Point 1 & 3)
+        // Xử lý logic thay đổi lớp hoặc tạo section nếu chưa có
         // Kiểm tra xem có đang có section active không
-        Optional<StudentClassSection> currentSection = sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(id);
+        List<StudentClassSection> currentSections = sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(id);
         
-        if (!Objects.equals(oldClassId, newClassId) || (newClassId != null && currentSection.isEmpty())) {
-            // Đóng section cũ nếu có
-            currentSection.ifPresent(old -> {
+        if (!Objects.equals(oldClassId, newClassId) || (newClassId != null && currentSections.isEmpty())) {
+            // Đóng tất cả các section đang active nếu có (đảm bảo không còn bản ghi nào treo)
+            for (StudentClassSection old : currentSections) {
                 old.setEndDate(LocalDateTime.now());
                 old.setStatus("completed");
                 old.setIsActive(false);
                 old.setUpdatedBy(updatedBy);
                 sectionRepo.save(old);
-            });
+            }
 
             // Nếu có lớp mới, tạo section mới
             if (newClassId != null) {
@@ -138,7 +137,6 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    @SuppressWarnings("null")
     public void delete(UUID id, UUID deletedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         Student s = studentRepo.findById(id)
@@ -150,15 +148,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @SuppressWarnings("null")
     public List<StudentListDTO> search(String keyword, UUID departmentId, UUID majorId, String status, UUID classId) {
-        return studentRepo.search(keyword, departmentId, majorId, status, classId)
-                .stream().map(this::toListDTO).collect(Collectors.toList());
+        List<Student> list = studentRepo.search(keyword, departmentId, majorId, status, classId);
+        return list.stream().map(this::toListDTO).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    @SuppressWarnings("null")
     public void transfer(StudentTransferDTO dto, UUID doneBy) {
         Objects.requireNonNull(dto, "Dữ liệu chuyển lớp không được để trống");
         Objects.requireNonNull(dto.getStudentId(), "Mã sinh viên không được để trống");
@@ -170,16 +166,16 @@ public class StudentServiceImpl implements StudentService {
         StudentClass newClass = classRepo.findById(dto.getNewClassId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp mới"));
 
-        // Đóng bản ghi cũ
-        sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(dto.getStudentId())
-                .ifPresent(old -> {
-                    old.setEndDate(LocalDateTime.now());
-                    old.setStatus("completed");
-                    old.setNote(dto.getReason());
-                    old.setIsActive(false);
-                    old.setUpdatedBy(doneBy);
-                    sectionRepo.save(old);
-                });
+        // Đóng tất cả bản ghi cũ đang active
+        List<StudentClassSection> oldSections = sectionRepo.findByStudent_IdAndIsActiveTrueAndEndDateIsNull(dto.getStudentId());
+        for (StudentClassSection old : oldSections) {
+            old.setEndDate(LocalDateTime.now());
+            old.setStatus("completed");
+            old.setNote(dto.getReason());
+            old.setIsActive(false);
+            old.setUpdatedBy(doneBy);
+            sectionRepo.save(old);
+        }
 
         // Tạo bản ghi mới
         StudentClassSection newSection = StudentClassSection.builder()
@@ -200,8 +196,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     // ---- Mapper helpers ----
-    @SuppressWarnings("null")
     private void mapFromDTO(Student s, StudentSaveDTO dto) {
+        Objects.requireNonNull(dto, "DTO không được để trống");
         s.setCode(dto.getCode());
         s.setFullName(dto.getFullName());
         s.setDateOfBirth(dto.getDateOfBirth());
@@ -256,7 +252,7 @@ public class StudentServiceImpl implements StudentService {
         d.setAddress(s.getAddress());
         d.setCurrentAddress(s.getCurrentAddress());
         d.setStatus(s.getStatus());
-        d.setAdmissionYear(s.getAdmissionYear());
+        d.setAdmissionYear(s.getAdmissionYear() != null ? s.getAdmissionYear().toLocalDate() : null);
         d.setIsActive(s.getIsActive());
         if (s.getDepartment() != null) { d.setDepartmentId(s.getDepartment().getId()); d.setDepartmentName(s.getDepartment().getName()); }
         if (s.getMajor() != null) { d.setMajorId(s.getMajor().getId()); d.setMajorName(s.getMajor().getMajorName()); }

@@ -50,7 +50,6 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
-    @SuppressWarnings("null")
     public StudentClassDetailDTO create(StudentClassSaveDTO dto, UUID createdBy) {
         if (classRepo.existsByCode(dto.getCode())) {
             throw new RuntimeException("Mã lớp đã tồn tại: " + dto.getCode());
@@ -63,7 +62,6 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
-    @SuppressWarnings("null")
     public StudentClassDetailDTO update(UUID id, StudentClassSaveDTO dto, UUID updatedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         StudentClass sc = classRepo.findById(id)
@@ -75,7 +73,6 @@ public class StudentClassServiceImpl implements StudentClassService {
 
     @Override
     @Transactional
-    @SuppressWarnings("null")
     public void delete(UUID id, UUID deletedBy) {
         Objects.requireNonNull(id, "ID không được để trống");
         StudentClass sc = classRepo.findById(id)
@@ -94,23 +91,32 @@ public class StudentClassServiceImpl implements StudentClassService {
     }
 
     @Override
-    @SuppressWarnings("null")
     public List<StudentClassListDTO> search(String keyword, UUID departmentId, UUID majorId) {
-        return classRepo.search(keyword, departmentId, majorId)
-                .stream().map(this::toListDTO).collect(Collectors.toList());
+        List<StudentClass> list = classRepo.search(keyword, departmentId, majorId);
+        return list.stream().map(this::toListDTO).collect(Collectors.toList());
     }
 
-    @SuppressWarnings("null")
     private void mapFromDTO(StudentClass sc, StudentClassSaveDTO dto) {
+        Objects.requireNonNull(dto, "DTO không được để trống");
         sc.setCode(dto.getCode());
         sc.setName(dto.getName());
         sc.setIsActive(true);
 
-        if (dto.getDepartmentId() != null) departmentRepo.findById(dto.getDepartmentId()).ifPresent(sc::setDepartment);
-        if (dto.getMajorId() != null) majorRepo.findById(dto.getMajorId()).ifPresent(sc::setMajor);
-        if (dto.getAcademicYearId() != null) academicYearRepo.findById(dto.getAcademicYearId()).ifPresent(sc::setAcademicYear);
-        if (dto.getTrainingProgramId() != null) trainingProgramRepo.findById(dto.getTrainingProgramId()).ifPresent(sc::setTrainingProgram);
-        if (dto.getEmployeeId() != null) employeeRepo.findById(dto.getEmployeeId()).ifPresent(sc::setEmployee);
+        if (dto.getDepartmentId() != null) {
+            departmentRepo.findById(dto.getDepartmentId()).ifPresent(sc::setDepartment);
+        }
+        if (dto.getMajorId() != null) {
+            majorRepo.findById(dto.getMajorId()).ifPresent(sc::setMajor);
+        }
+        if (dto.getAcademicYearId() != null) {
+            academicYearRepo.findById(dto.getAcademicYearId()).ifPresent(sc::setAcademicYear);
+        }
+        if (dto.getTrainingProgramId() != null) {
+            trainingProgramRepo.findById(dto.getTrainingProgramId()).ifPresent(sc::setTrainingProgram);
+        }
+        if (dto.getEmployeeId() != null) {
+            employeeRepo.findById(dto.getEmployeeId()).ifPresent(sc::setEmployee);
+        }
     }
 
     private StudentClassListDTO toListDTO(StudentClass sc) {
@@ -133,7 +139,11 @@ public class StudentClassServiceImpl implements StudentClassService {
         if (sc.getMajor() != null) { d.setMajorId(sc.getMajor().getId()); d.setMajorName(sc.getMajor().getMajorName()); }
         if (sc.getAcademicYear() != null) { d.setAcademicYearId(sc.getAcademicYear().getId()); d.setAcademicYear(sc.getAcademicYear().getAcademicYear()); }
         if (sc.getTrainingProgram() != null) { d.setTrainingProgramId(sc.getTrainingProgram().getId()); d.setTrainingProgramName(sc.getTrainingProgram().getProgramName()); }
-        if (sc.getEmployee() != null) { d.setEmployeeId(sc.getEmployee().getId()); d.setEmployeeName(sc.getEmployee().getFullName()); }
+        if (sc.getEmployee() != null) { 
+            d.setEmployeeId(sc.getEmployee().getId()); 
+            d.setEmployeeName(sc.getEmployee().getFullName());
+            d.setAdvisorName(sc.getEmployee().getFullName());
+        }
         d.setIsActive(sc.getIsActive());
         d.setCreatedAt(sc.getCreatedAt());
         d.setCreatedBy(sc.getCreatedBy());

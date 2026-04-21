@@ -135,6 +135,15 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
+                    <!-- Error Board -->
+                    <div id="advisor-error-board" class="alert alert-danger error-board shadow-sm" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-2 fs-5"></i>
+                            <h6 class="mb-0 fw-bold">Vui lòng kiểm tra lại:</h6>
+                        </div>
+                        <ul id="advisor-error-list" class="mt-2 mb-0 small ps-4"></ul>
+                    </div>
+                    
                     <form id="advisorForm" class="row g-3 needs-validation" novalidate>
                         <input type="hidden" id="form_mode" value="add">
                         <input type="hidden" id="form_id">
@@ -286,19 +295,25 @@
                 let avatarChar = getAvatarInitials(adv.employeeName);
                 let avatarClass = isEnded ? "bg-secondary bg-opacity-10 text-secondary" : "bg-primary bg-opacity-10 text-primary";
                 let textClass = isEnded ? "fw-medium text-secondary" : "fw-bold text-dark";
+                
+                // Fix bug 3: Bỏ T00:00:00 (Already fixed by backend returning LocalDate)
+                let startDateDisplay = adv.startDate || '';
+                let endDateDisplay = adv.endDate || '';
+
+                // Fix bug 4: Hiển thị "Hiện tại" nếu chưa kết thúc
                 let endDateUI = isEnded
-                    ? `<span class="status-ended">${adv.endDate}</span>`
-                    : `<span class="status-active"><span class="spinner-grow spinner-grow-sm text-success" style="width:8px;height:8px;"></span> Đang phụ trách</span>`;
+                    ? `<span class="status-ended">${endDateDisplay}</span>`
+                    : `<span class="status-active"><span class="spinner-grow spinner-grow-sm text-success" style="width:8px;height:8px;"></span> Hiện tại</span>`;
 
                 tr.innerHTML = `
-                    <td class="ps-4"><span class="class-code-badge fw-bold font-monospace">${adv.studentClassName}</span></td>
+                    <td class="ps-4"><span class="class-code-badge fw-bold font-monospace">${adv.studentClassName || '---'}</span></td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="avatar-sm ${avatarClass}">${avatarChar}</div>
-                            <span class="${textClass}">${adv.employeeName}</span>
+                            <span class="${textClass}">${adv.employeeName || 'Chưa xác định'}</span>
                         </div>
                     </td>
-                    <td class="fw-medium text-muted">${adv.startDate || ''}</td>
+                    <td class="fw-medium text-muted">${startDateDisplay}</td>
                     <td>${endDateUI}</td>
                     <td class="text-end pe-4">
                         <button class="btn btn-light btn-action text-danger border shadow-sm" 
@@ -320,18 +335,67 @@
             const adv = data.find(item => item.id === id);
             if (!adv) return;
 
-            document.getElementById('detail-employeeName').textContent = adv.employeeName;
-            document.getElementById('detail-studentClassName').textContent = adv.studentClassName;
-            document.getElementById('detail-startDate').textContent = adv.startDate || '---';
-            document.getElementById('detail-endDate').textContent = adv.endDate || 'Đang trong nhiệm kỳ';
+            // Fix bug 1 & 2: Hiển thị tên
+            document.getElementById('detail-employee_name').textContent = adv.employeeName || '---';
+            document.getElementById('detail-student_classe_id').textContent = adv.studentClassName || '---';
+            
+            // Fix bug 3: Định dạng ngày
+            document.getElementById('detail-start_date').textContent = adv.startDate || '---';
+            
+            // Fix bug 4: Hiển thị "Hiện tại"
+            document.getElementById('detail-end_date').innerHTML = adv.endDate 
+                ? `<span class="text-danger fw-bold">${adv.endDate}</span>` 
+                : '<span class="text-success fw-bold">Hiện tại</span>';
+
+            // Fix bug 5-9: Hiển thị các trường hệ thống
+            document.getElementById('detail-is_active').innerHTML = adv.isActive 
+                ? '<span class="badge bg-success">Đang hiệu lực</span>' 
+                : '<span class="badge bg-secondary">Hết hiệu lực</span>';
+            
+            document.getElementById('detail-created_at').textContent = adv.createdAt ? adv.createdAt.replace('T', ' ') : '---';
+            document.getElementById('detail-created_by').textContent = adv.createdBy || 'Hệ thống';
+            document.getElementById('detail-updated_at').textContent = adv.updatedAt ? adv.updatedAt.replace('T', ' ') : 'Chưa cập nhật';
+            document.getElementById('detail-updated_by').textContent = adv.updatedBy || '---';
+            
+            // Lưu ID vào hidden input để dùng cho các hàm trigger
+            document.getElementById('detail-active-id').value = id;
 
             document.getElementById('modal-btn-end').style.display = adv.endDate ? "none" : "inline-block";
-            document.getElementById('modal-btn-end').onclick = () => {
-                advisorDetailModal.hide();
-                openEndModal(null, id);
-            };
-
             advisorDetailModal.show();
+        }
+
+        function triggerEditFromDetail() {
+            const id = document.getElementById('detail-active-id').value;
+            advisorDetailModal.hide();
+            openEditModal(null, id);
+        }
+
+        function triggerEndFromDetail() {
+            const id = document.getElementById('detail-active-id').value;
+            advisorDetailModal.hide();
+            openEndModal(null, id);
+        }
+
+        function openEditModal(event, id) {
+            if (event) event.stopPropagation();
+            const adv = allData.find(item => item.id === id);
+            if (!adv) return;
+
+            const form = document.getElementById("advisorForm");
+            form.reset();
+            form.classList.remove('was-validated');
+            clearErrors(); 
+
+            document.getElementById("form_mode").value = "edit";
+            document.getElementById("form_id").value = id;
+            document.getElementById("form_employee").value = adv.employeeId || "";
+            document.getElementById("form_class").value = adv.studentClassId || "";
+            document.getElementById("form_start_date").value = adv.startDate || "";
+            document.getElementById("form_end_date").value = adv.endDate || "";
+            document.getElementById("form_is_active").value = adv.isActive ? "1" : "0";
+
+            document.getElementById("formModalTitle").innerHTML = '<i class="fas fa-edit me-2"></i> Chỉnh sửa Phân công';
+            advisorFormModal.show();
         }
 
         function clearErrors() {
@@ -384,25 +448,34 @@
                 return;
             }
 
+            const mode = document.getElementById("form_mode").value;
+            const id = document.getElementById("form_id").value;
+            
             const payload = {
                 employeeId: document.getElementById("form_employee").value,
-                studentClassId: document.getElementById("form_class").value
+                studentClassId: document.getElementById("form_class").value,
+                startDate: document.getElementById("form_start_date").value,
+                endDate: document.getElementById("form_end_date").value,
+                isActive: document.getElementById("form_is_active").value === "1"
             };
 
+            const url = mode === "add" ? '/api/advisor-sections' : `/api/advisor-sections/${id}`;
+            const method = mode === "add" ? 'POST' : 'PUT';
+
             try {
-                const res = await fetch('/api/advisor-sections', { 
-                    method: 'POST', 
+                const res = await fetch(url, { 
+                    method: method, 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify(payload) 
                 });
 
                 if (res.ok) {
-                    alert("Đã tạo phân công cố vấn thành công!");
+                    alert(mode === "add" ? "Đã tạo phân công cố vấn thành công!" : "Đã cập nhật phân công thành công!");
                     advisorFormModal.hide();
                     renderTable();
                 } else {
                     const err = await res.json();
-                    showErrors(err.message || "Lớp học này đã có cố vấn phụ trách.");
+                    showErrors(err.message || "Lỗi khi lưu dữ liệu. Vui lòng kiểm tra lại.");
                 }
             } catch (error) {
                 showErrors("Lỗi kết nối mạng. Vui lòng thử lại sau.");

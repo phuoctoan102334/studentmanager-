@@ -66,15 +66,33 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         String message = ex.getMessage();
         
-        // Dịch các lỗi SQL phổ biến nếu nó nằm trong RuntimeException
-        if (message != null && message.contains("could not execute statement")) {
-            if (message.contains("CK_stu_gender")) {
-                error.put("message", "Lỗi: Giới tính đã chọn không đúng quy định.");
+        // Dịch các lỗi SQL/JPA phổ biến sang tiếng Việt
+        if (message != null) {
+            if (message.contains("Query did not return a unique result") || message.contains("NonUniqueResultException")) {
+                error.put("message", "Lỗi dữ liệu hệ thống: Tìm thấy nhiều hơn một bản ghi cho yêu cầu này. Vui lòng liên hệ quản trị viên để chuẩn hóa dữ liệu.");
+            } else if (message.contains("could not execute statement")) {
+                if (message.contains("CK_stu_gender")) {
+                    error.put("message", "Lỗi: Giá trị giới tính không đúng định dạng cho phép.");
+                } else if (message.contains("UK_") || message.contains("duplicate key") || message.contains("Duplicate entry")) {
+                    error.put("message", "Dữ liệu bị trùng lặp: Thông tin này đã tồn tại trên hệ thống (ví dụ: Mã số hoặc Số định danh đã được sử dụng).");
+                } else if (message.contains("FOREIGN KEY") || message.contains("violates foreign key constraint")) {
+                    error.put("message", "Không thể thực hiện do dữ liệu này đang được liên kết với các thông tin khác trong hệ thống.");
+                } else {
+                    error.put("message", "Không thể thực hiện yêu cầu này do vi phạm quy tắc ràng buộc dữ liệu.");
+                }
+            } else if (message.contains("EntityNotFoundException") || message.contains("No static resource") || message.contains("not found")) {
+                if (message.contains("Student")) error.put("message", "Không tìm thấy thông tin sinh viên yêu cầu.");
+                else if (message.contains("Class")) error.put("message", "Không tìm thấy thông tin lớp học yêu cầu.");
+                else error.put("message", "Không tìm thấy tài nguyên hoặc dữ liệu yêu cầu trên hệ thống.");
+            } else if (message.contains("OptimisticLockException") || message.contains("stale data")) {
+                error.put("message", "Dữ liệu đã được thay đổi bởi một người dùng khác. Vui lòng tải lại trang và thử lại.");
+            } else if (message.contains("Access is denied") || message.contains("AccessDeniedException")) {
+                error.put("message", "Bạn không có quyền thực hiện chức năng này.");
             } else {
-                error.put("message", "Không thể lưu dữ liệu vào cơ sở dữ liệu. Vui lòng kiểm tra lại thông tin.");
+                error.put("message", message);
             }
         } else {
-            error.put("message", message);
+            error.put("message", "Đã xảy ra lỗi thực thi không xác định trên máy chủ.");
         }
         
         error.put("status", "error");
@@ -84,7 +102,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("message", "Đã xảy ra lỗi hệ thống: " + ex.getMessage());
+        String message = ex.getMessage();
+        
+        if (message != null) {
+            if (message.contains("Query did not return a unique result")) {
+                error.put("message", "Lỗi hệ thống: Dữ liệu trả về không duy nhất. Vui lòng liên hệ bộ phận kỹ thuật.");
+            } else if (message.contains("Connection refused") || message.contains("Communications link failure")) {
+                error.put("message", "Lỗi kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại trạng thái máy chủ.");
+            } else {
+                error.put("message", "Đã xảy ra lỗi hệ thống không mong muốn. Vui lòng thử lại sau.");
+            }
+        } else {
+            error.put("message", "Lỗi hệ thống không xác định.");
+        }
+        
         error.put("status", "error");
         return ResponseEntity.internalServerError().body(error);
     }

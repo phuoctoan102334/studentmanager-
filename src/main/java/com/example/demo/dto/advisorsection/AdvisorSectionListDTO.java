@@ -2,6 +2,7 @@ package com.example.demo.dto.advisorsection;
 
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,6 +14,11 @@ public class AdvisorSectionListDTO {
     private String employeeCode;
     private UUID studentClassId;
     private String studentClassName;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private Boolean isActive;
+    private LocalDateTime createdAt;
+    private UUID createdBy;
+    private LocalDateTime updatedAt;
+    private UUID updatedBy;
 }
