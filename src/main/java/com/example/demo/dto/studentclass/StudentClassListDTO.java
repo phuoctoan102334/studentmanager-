@@ -9,6 +9,8 @@ public class StudentClassListDTO {
     private String code;
     private String name;
     private String departmentName;
+    private String majorName;
+    private String academicYearName;
     private String advisorName;
     private Boolean isActive;
 }

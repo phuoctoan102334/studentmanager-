@@ -3,6 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.dto.studentclass.*;
 import com.example.demo.service.StudentClassService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +20,8 @@ public class StudentClassController {
     private final StudentClassService classService;
 
     @GetMapping
-    public ResponseEntity<List<StudentClassListDTO>> getAll() {
-        return ResponseEntity.ok(classService.getAll());
+    public ResponseEntity<Page<StudentClassListDTO>> getAll(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(classService.getAllPaged(pageable));
     }
 
     @GetMapping("/{code}")
@@ -32,11 +35,12 @@ public class StudentClassController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<StudentClassListDTO>> search(
+    public ResponseEntity<Page<StudentClassListDTO>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) UUID departmentId,
-            @RequestParam(required = false) UUID majorId) {
-        return ResponseEntity.ok(classService.search(keyword, departmentId, majorId));
+            @RequestParam(required = false) UUID majorId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(classService.searchPaged(keyword, departmentId, majorId, pageable));
     }
 
     @PostMapping

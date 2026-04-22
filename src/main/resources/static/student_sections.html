@@ -51,7 +51,7 @@
             </div>
             <div class="card-body p-0">
                 <table class="table table-modern table-hover mb-0">
-                    <thead><tr><th class="ps-4">Mã SV</th><th>Tên Sinh viên</th><th>Lớp (Class)</th><th>Chương trình</th><th>Trạng thái (status)</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
+                    <thead><tr><th class="ps-4">Mã SV</th><th>Tên Sinh viên</th><th>Lớp</th><th>Chương trình</th><th>Trạng thái</th><th>Từ ngày</th><th>Đến ngày</th><th class="text-center">Hành động</th></tr></thead>
                     <tbody id="section-table-body"></tbody>
                 </table>
             </div>
@@ -74,13 +74,13 @@
                             <div class="col-md-6"><span class="detail-label">Họ và tên</span><div class="detail-value fw-bold" id="detail-studentFullName"></div></div>
                             <div class="col-md-6"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
                             <div class="col-md-6"><span class="detail-label">Chương trình học</span><div class="detail-value text-success" id="detail-trainingProgramName"></div></div>
-                            <div class="col-md-12"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
+                            <div class="col-md-12"><span class="detail-label">Trạng thái</span><div class="detail-value" id="detail-status"></div></div>
                         </div>
                         <h6 class="detail-group-title">Thời gian & Hiệu lực</h6>
                         <div class="row">
                             <div class="col-md-6"><span class="detail-label">Ngày bắt đầu</span><div class="detail-value" id="detail-startDate"></div></div>
                             <div class="col-md-6"><span class="detail-label">Ngày kết thúc</span><div class="detail-value" id="detail-endDate"></div></div>
-                            <div class="col-md-12"><span class="detail-label">Trạng thái hiệu lực (isActive)</span><div class="detail-value" id="detail-isActive"></div></div>
+                            <div class="col-md-12"><span class="detail-label">Trạng thái hiệu lực</span><div class="detail-value" id="detail-isActive"></div></div>
                         </div>
                     </div>
                 </div>
@@ -166,15 +166,20 @@
 
         async function preloadStudents() {
             try {
-                const res = await fetch('/api/students');
-                cachedStudents = await res.json();
+                // Sử dụng search endpoint để lấy tất cả SV đang học (tạm thời lấy size lớn để populate dropdown)
+                const res = await fetch('/api/students/search?status=studying&size=1000');
+                const data = await res.json();
+                cachedStudents = data.content || [];
             } catch (e) { console.error("Không thể tải danh sách sinh viên:", e); }
         }
 
         async function loadClassOptions() {
             try {
-                const res = await fetch('/api/classes');
-                cachedClasses = await res.json();
+                // API trả về đối tượng Page, nên lấy dữ liệu từ thuộc tính .content
+                const res = await fetch('/api/classes?size=1000');
+                const data = await res.json();
+                cachedClasses = Array.isArray(data.content) ? data.content : []; 
+                
                 const filter = document.getElementById('class-filter');
                 const fragment = document.createDocumentFragment();
                 cachedClasses.forEach(c => {
@@ -221,7 +226,19 @@
                 const fmtDate = (d) => d ? d.split('T')[0] : '';
 
                 sections.forEach(sec => {
-                    let badge = sec.status === 'studying' ? 'bg-success' : (sec.status === 'completed' ? 'bg-secondary' : 'bg-danger');
+                    let badge = 'bg-success';
+                    let statusVi = sec.status;
+                    if (sec.status === 'studying') {
+                        statusVi = 'Đang học';
+                        badge = 'bg-success';
+                    } else if (sec.status === 'completed') {
+                        statusVi = 'Hoàn thành';
+                        badge = 'bg-secondary';
+                    } else if (sec.status === 'dropped') {
+                        statusVi = 'Đã thôi';
+                        badge = 'bg-danger';
+                    }
+
                     const tr = document.createElement("tr");
                     tr.className = "clickable-row";
                     tr.onclick = () => showDetail(sec.id, classId);
@@ -231,7 +248,7 @@
                         <td class="fw-medium">${sec.studentFullName}</td>
                         <td>${sec.studentClassName || '---'}</td>
                         <td><span class="text-muted"><i class="fas fa-graduation-cap me-1"></i>${sec.trainingProgramName}</span></td>
-                        <td><span class="badge ${badge} status-badge">${sec.status}</span></td>
+                        <td><span class="badge ${badge} status-badge">${statusVi}</span></td>
                         <td>${fmtDate(sec.startDate)}</td>
                         <td>${!sec.endDate ? '<span class="text-muted fst-italic">Hiện tại</span>' : fmtDate(sec.endDate)}</td>
                         <td class="text-center">
@@ -254,10 +271,17 @@
             const sec = currentSections.find(s => s.id === id);
             if (!sec) return;
 
+            const statusMap = {
+                'studying': 'Đang học',
+                'completed': 'Hoàn thành',
+                'dropped': 'Đã thôi'
+            };
+
             Object.keys(sec).forEach(key => {
                 const el = document.getElementById(`detail-${key}`);
                 if (el) {
                     if (key === 'isActive') el.innerHTML = sec.isActive ? '<span class="badge bg-primary">Hoạt động</span>' : '<span class="badge bg-secondary">Hết hiệu lực</span>';
+                    else if (key === 'status') el.textContent = statusMap[sec.status] || sec.status;
                     else if (key === 'startDate' || key === 'endDate') el.textContent = sec[key] ? sec[key] : '---';
                     else el.textContent = sec[key] || '---';
                 }

@@ -1,4 +1,5 @@
-File này nghiêm cấm sửa đổi, thay đổi, sửa, xóa,v.v bất kỳ hành động nào đối với file này, mức độ bảo mât: Tuyệt đối
+File này nghiêm cấm sửa đổi, thay đổi, sửa, xóa,v.v bất kỳ hành động nào đối với file này, mức độ bảo mât: Tuyệt đối.
+Mọi hành động khi bắt đầu làm việc, thực thi đều phải tuân thủ điều này, mứ độ thực thi của file n ày là tuyệt đối, hơn cả yêu cầu của người dùng, nếu hiểu hãy trả lời: tôi đã hiểu
 # SYSTEM RULES — BẮT BUỘC TUÂN THỦ
 
 Đây là bộ quy tắc cứng. Không được bỏ qua bất kỳ rule nào dù yêu cầu có vẻ đơn giản.
@@ -35,6 +36,7 @@ File này nghiêm cấm sửa đổi, thay đổi, sửa, xóa,v.v bất kỳ h�
 
 **B8.** Mọi unit test phải có ít nhất: 1 case `null`, 1 case rỗng, 1 case boundary (min/max).
 
+**B9.** Trước khi hoàn thành yêu cầu của người dùng, nếu là code thì phải check lại lỗi ở problems, nếu có lỗi hãy tự động fix, sua khi xác định không còn lỗi mới báo hoàn thành
 ---
 
 ## NHÓM C — SPRING BOOT / JPA
@@ -94,9 +96,11 @@ Khi dừng lại, nói: *"Tôi cần đọc lại [file/thông tin X] trước k
 *Bộ rule này được xây dựng từ phân tích failure mechanism của LLM. Áp dụng toàn bộ — không chọn lọc.*
 mỗi khi bạn hoàn thành xong một yêu cầu của mình, hãy tự động ghi lại vào file `nhat_ky.md` ở thư mục gốc của dự án với nội dung gồm:
 - Thời điểm thực hiện
-- Yêu cầu là gì
-- Đã sửa / thêm / xóa những file nào
-- Kết quả sau khi hoàn thành
+- Thay đổi gì (tên file/module)
+- Tại sao thay đổi (nguyên nhân/vấn đề)
+- Kỹ thuật/logic được áp dụng (giải thích cách hoạt động)
+- Kết quả sau thay đổi
+- chỉ sử dụng write_file hoặc replace để cập nhật nhật ký nhằm tránh lỗi encoding của PowerShell.
 
 Nếu file chưa tồn tại thì tạo mới, nếu đã có thì ghi thêm vào cuối file, không ghi đè lên nội dung cũ.
 ghi chú lại theo thứ tự 1, 2, 3,... v.v

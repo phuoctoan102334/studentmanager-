@@ -88,3 +88,73 @@
    - Yêu cầu: Fix các lỗi (Severity 8) trong file bug.txt sau khi thay đổi kiểu dữ liệu Repository.
    - Đã sửa: StudentServiceTest.java, StudentClassSectionRepository.java, StudentServiceImpl.java.
    - Kết quả: Đã cập nhật Unit Test để khớp với kiểu trả về List thay vì Optional. Loại bỏ các import không còn sử dụng. Đã ưu tiên sửa các lỗi nghiêm trọng, các cảnh báo (warnings) sẽ được xử lý sau.
+
+---
+14. Thời điểm: 21/04/2026 21:40:00
+   - Yêu cầu: Khắc phục triệt để tình trạng tải dữ liệu chậm bằng phân trang Server-side và tối ưu hóa hệ thống.
+   - Đã sửa: StudentRepository.java, StudentClassRepository.java, StudentServiceImpl.java, StudentClassServiceImpl.java, StudentController.java, StudentClassController.java, DiscoveryController.java, students.html, classes.html, student_sections.html, advisor_sections.html.
+   - Kết quả: Đã triển khai thành công phân trang Server-side cho Sinh viên và Lớp học. Tối ưu hóa DiscoveryController và áp dụng Client-side Caching (sessionStorage) cho các danh mục. Fix toàn bộ các lỗi compile và cảnh báo null-safety phát sinh trong quá trình nâng cấp. Hệ thống hiện hoạt động mượt mà với dữ liệu lớn, thời gian tải trang và tìm kiếm giảm đáng kể.
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+1. 22/04/2026 09:41:04
+- Yêu cầu: Thêm chức năng phân trang vào giao diện Web (trang Sinh viên).
+- Đã sửa:
+  + src/main/java/com/example/demo/service/StudentService.java (Khai báo method Pageable)
+  + src/main/java/com/example/demo/controller/StudentController.java (Cập nhật endpoint hỗ trợ Pageable)
+  + src/main/resources/static/students.html (Thêm UI phân trang và logic JS)
+- Kết quả: Chức năng phân trang hoạt động tốt, giảm tải cho trình duyệt khi dữ liệu lớn.
+
+2. 22/04/2026 09:47:00
+- Yêu cầu: Xóa nhãn kỹ thuật (code, name...) và Việt hóa 100% giao diện.
+- Đã sửa:
+  + src/main/resources/static/students.html
+  + src/main/resources/static/classes.html
+  + src/main/resources/static/student_sections.html
+  + src/main/resources/static/advisor_sections.html
+- Kết quả: Giao diện đồng nhất tiếng Việt, không còn các ký tự kỹ thuật gây nhiễu.
+
+3. 22/04/2026 09:48:28
+- Yêu cầu: Chuyển các giá trị trạng thái (studying, dropout...) sang tiếng Việt trong bảng và modal chi tiết.
+- Đã sửa:
+  + src/main/resources/static/students.html (Hàm renderTable và showDetail)
+  + src/main/resources/static/student_sections.html (Hàm renderTable và showDetail)
+- Kết quả: Các trạng thái hiển thị thân thiện bằng tiếng Việt (Đang học, Bảo lưu, Thôi học...).
+
+4. 22/04/2026 09:51:18
+- Yêu cầu: Đọc file bug.txt và sửa các lỗi Java/IDE báo cáo.
+- Đã sửa:
+  + src/main/java/com/example/demo/service/StudentClassService.java (Thêm method vào Interface)
+  + src/main/java/com/example/demo/controller/StudentController.java (Xóa import thừa)
+  + src/main/java/com/example/demo/service/impl/StudentServiceImpl.java (Sửa Null safety warnings)
+- Kết quả: Giải quyết các lỗi biên dịch và cảnh báo nghiêm trọng trong dự án.
+
+5. 22/04/2026 09:54:18
+- Yêu cầu: Sửa lỗi không chọn được lớp trong Phân lớp và nâng cấp phân trang cho Lớp học.
+- Đã sửa:
+  + src/main/java/com/example/demo/controller/StudentClassController.java (Thêm phân trang)
+  + src/main/resources/static/student_sections.html (Sửa lỗi đọc dữ liệu lớp học)
+  + src/main/resources/static/classes.html (Nâng cấp giao diện phân trang)
+- Kết quả: Các trang hoạt động ổn định, đồng bộ về logic phân trang.
+
+6. 22/04/2026 10:00:57
+- Yêu cầu: Đọc file bug.txt (mới) và sửa lỗi.
+- Đã sửa:
+  + src/main/java/com/example/demo/DemoApplication.java (Cấu hình @EnableSpringDataWebSupport với VIA_DTO)
+- Kết quả: Giải quyết cảnh báo Serializing PageImpl, chuẩn hóa cấu trúc JSON phân trang trả về cho Frontend.
+
+7. 22/04/2026 10:30:00
+- Yêu cầu: Fix lỗi 'classes.forEach is not a function' và cập nhật logic phân trang.
+- Đã sửa:
+  + src/main/resources/static/classes.html: Cập nhật renderTable, updatePaginationInfo, renderPaginationControls.
+  + src/main/resources/static/students.html: Cập nhật renderTable, updatePaginationInfo, renderPaginationControls.
+  + src/main/resources/static/student_sections.html: Cập nhật loadClassOptions.
+- Kết quả: Khắc phục triệt để lỗi crash giao diện, hỗ trợ cấu trúc JSON VIA_DTO mới, trang Lớp học và Sinh viên hiển thị dữ liệu và phân trang chính xác.
+
+8. 22/04/2026 11:00:00
+- Yêu cầu: Khắc phục lỗi không hiển thị 'Ngành' và 'Niên khóa' trong danh sách Lớp hành chính.
+- Đã sửa: 
+  + src/main/java/com/example/demo/dto/studentclass/StudentClassListDTO.java (Thêm majorName, academicYearName)
+  + src/main/java/com/example/demo/service/impl/StudentClassServiceImpl.java (Map dữ liệu trong toListDTO)
+  + src/main/java/com/example/demo/repository/StudentClassRepository.java (Sử dụng JOIN FETCH cho major và academicYear)
+- Nguyên nhân: DTO thiếu trường và Service chưa map dữ liệu, dẫn đến Frontend không có thông tin để hiển thị.
+- Kỹ thuật: Sử dụng JOIN FETCH trong JPQL để lấy dữ liệu quan hệ một cách tối ưu, tránh N+1 query.
+- Kết quả: Ngành và Niên khóa hiển thị đầy đủ, mượt mà trên giao diện.

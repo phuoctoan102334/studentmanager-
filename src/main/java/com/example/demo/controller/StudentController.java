@@ -4,10 +4,12 @@ import com.example.demo.dto.student.*;
 import com.example.demo.dto.studentsection.StudentTransferDTO;
 import com.example.demo.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,8 +20,8 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<StudentListDTO>> getAll() {
-        return ResponseEntity.ok(studentService.getAll());
+    public ResponseEntity<Page<StudentListDTO>> getAll(@PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(studentService.getAllPaged(pageable));
     }
 
     @GetMapping("/{code}")
@@ -33,13 +35,14 @@ public class StudentController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<StudentListDTO>> search(
+    public ResponseEntity<Page<StudentListDTO>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) UUID departmentId,
             @RequestParam(required = false) UUID majorId,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) UUID classId) {
-        return ResponseEntity.ok(studentService.search(keyword, departmentId, majorId, status, classId));
+            @RequestParam(required = false) UUID classId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(studentService.searchPaged(keyword, departmentId, majorId, status, classId, pageable));
     }
 
     @PostMapping

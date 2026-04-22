@@ -63,6 +63,18 @@
                     <tbody id="student-table-body"></tbody>
                 </table>
             </div>
+            <div class="card-footer bg-white border-top-0 py-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="text-muted small mb-2 mb-md-0" id="pagination-info">
+                        Hiển thị <span id="current-range">0-0</span> trong tổng số <span id="total-elements">0</span> sinh viên
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0" id="pagination-controls">
+                            <!-- Các nút phân trang sẽ được chèn vào đây -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -78,27 +90,27 @@
                     <div class="card border-0 shadow-sm p-4">
                         <h6 class="detail-group-title mt-0"><i class="fas fa-user me-2"></i> Thông tin cơ bản</h6>
                         <div class="row">
-                            <div class="col-md-3"><span class="detail-label">Mã số (code)</span><div class="detail-value text-primary fw-bold" id="detail-code"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Họ và tên (fullName)</span><div class="detail-value" id="detail-fullName"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Ngày sinh (dateOfBirth)</span><div class="detail-value" id="detail-dateOfBirth"></div></div>
-                            <div class="col-md-3"><span class="detail-label">Giới tính (gender)</span><div class="detail-value" id="detail-gender"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Mã số</span><div class="detail-value text-primary fw-bold" id="detail-code"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Họ và tên</span><div class="detail-value" id="detail-fullName"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Ngày sinh</span><div class="detail-value" id="detail-dateOfBirth"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Giới tính</span><div class="detail-value" id="detail-gender"></div></div>
                         </div>
                         <h6 class="detail-group-title"><i class="fas fa-passport me-2"></i> Thông tin Giấy tờ & Cư trú</h6>
                         <div class="row">
                             <div class="col-md-4"><span class="detail-label">CMND/CCCD</span><div class="detail-value" id="detail-personalIdentificationNumber"></div></div>
                             <div class="col-md-4"><span class="detail-label">Ngày cấp</span><div class="detail-value" id="detail-dateOfIssue"></div></div>
                             <div class="col-md-4"><span class="detail-label">Nơi cấp</span><div class="detail-value" id="detail-cardPlace"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Thường trú (address)</span><div class="detail-value" id="detail-address"></div></div>
-                            <div class="col-md-6"><span class="detail-label">Hiện tại (currentAddress)</span><div class="detail-value" id="detail-currentAddress"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Thường trú</span><div class="detail-value" id="detail-address"></div></div>
+                            <div class="col-md-6"><span class="detail-label">Hiện tại</span><div class="detail-value" id="detail-currentAddress"></div></div>
                         </div>
                         <h6 class="detail-group-title"><i class="fas fa-graduation-cap me-2"></i> Thông tin Đào tạo</h6>
                         <div class="row">
-                            <div class="col-md-3"><span class="detail-label">Trạng thái (status)</span><div class="detail-value" id="detail-status"></div></div>
+                            <div class="col-md-3"><span class="detail-label">Trạng thái</span><div class="detail-value" id="detail-status"></div></div>
                             <div class="col-md-3"><span class="detail-label">Lớp hành chính</span><div class="detail-value" id="detail-studentClassName"></div></div>
                             <div class="col-md-3"><span class="detail-label">Niên khóa</span><div class="detail-value" id="detail-academicYear"></div></div>
                             <div class="col-md-3"><span class="detail-label">Ngày nhập học</span><div class="detail-value" id="detail-admissionYear"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Khoa (departmentName)</span><div class="detail-value" id="detail-departmentName"></div></div>
-                            <div class="col-md-4"><span class="detail-label">Ngành (majorName)</span><div class="detail-value" id="detail-majorName"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Khoa</span><div class="detail-value" id="detail-departmentName"></div></div>
+                            <div class="col-md-4"><span class="detail-label">Ngành</span><div class="detail-value" id="detail-majorName"></div></div>
                             <div class="col-md-4"><span class="detail-label">Chương trình</span><div class="detail-value" id="detail-trainingProgramName"></div></div>
                         </div>
                     </div>
@@ -197,10 +209,10 @@
                             <label class="form-label" for="form_status">Trạng thái học tập *</label>
                             <select class="form-select" id="form_status" required>
                                 <option value="">-- Chọn --</option>
-                                <option value="studying">Studying (Đang học)</option>
-                                <option value="reserved">Reserved (Bảo lưu)</option>
-                                <option value="dropout">Dropout (Thôi học)</option>
-                                <option value="graduated">Graduated (Tốt nghiệp)</option>
+                                <option value="studying">Đang học (Studying)</option>
+                                <option value="reserved">Bảo lưu (Reserved)</option>
+                                <option value="dropout">Thôi học (Dropout)</option>
+                                <option value="graduated">Tốt nghiệp (Graduated)</option>
                             </select>
                             <div class="invalid-feedback">Vui lòng chọn trạng thái học tập.</div>
                         </div>
@@ -258,6 +270,9 @@
     <script>
         let detailModal;
         let formModal;
+        let currentPage = 0;
+        let pageSize = 10;
+        let totalPages = 0;
 
         document.addEventListener("DOMContentLoaded", function () {
             detailModal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
@@ -265,7 +280,7 @@
             
             // Tải dữ liệu cho các bảng chọn
             loadDropdownData();
-            renderTable();
+            renderTable(0); // Bắt đầu ở trang 0
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('form_date_of_issue').setAttribute('max', today);
@@ -305,31 +320,61 @@
             });
         }
 
-        async function fetchStudents() {
-            const res = await fetch('/api/students');
+        async function fetchStudents(page = 0, size = 10) {
+            const res = await fetch(`/api/students?page=${page}&size=${size}`);
             return await res.json();
         }
 
-        async function renderTable() {
+        async function renderTable(page = 0) {
+            currentPage = page;
             const tableBody = document.getElementById("student-table-body");
             // Hiển thị trạng thái đang tải
             tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải dữ liệu...</p></td></tr>`;
             
             try {
-                const students = await fetchStudents();
-                if (!students || students.length === 0) {
+                const pageData = await fetchStudents(page, pageSize);
+                
+                // Hỗ trợ cả cấu trúc Page cũ và cấu trúc VIA_DTO mới, đảm bảo luôn là mảng
+                const students = Array.isArray(pageData.content) ? pageData.content : [];
+                const pageInfo = pageData.page || {
+                    number: pageData.number,
+                    size: pageData.size,
+                    totalElements: pageData.totalElements,
+                    totalPages: pageData.totalPages,
+                    numberOfElements: pageData.numberOfElements,
+                    first: pageData.first,
+                    last: pageData.last
+                };
+                
+                totalPages = pageInfo.totalPages || 0;
+                
+                // Cập nhật thông tin phân trang
+                updatePaginationInfo(pageInfo);
+                renderPaginationControls(pageInfo);
+
+                if (students.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu sinh viên nào.</td></tr>`;
                     return;
                 }
 
-                // Sử dụng DocumentFragment để tối ưu hiệu năng render (chỉ reflow 1 lần duy nhất)
                 const fragment = document.createDocumentFragment();
-                
                 students.forEach(student => {
                     let badgeClass = "bg-success";
-                    if (student.status === "reserved") badgeClass = "bg-secondary";
-                    else if (student.status === "dropout") badgeClass = "bg-danger";
-                    else if (student.status === "graduated") badgeClass = "bg-info text-dark";
+                    let statusVi = student.status;
+                    
+                    if (student.status === "studying") {
+                        statusVi = "Đang học";
+                        badgeClass = "bg-success";
+                    } else if (student.status === "reserved") {
+                        statusVi = "Bảo lưu";
+                        badgeClass = "bg-secondary";
+                    } else if (student.status === "dropout") {
+                        statusVi = "Thôi học";
+                        badgeClass = "bg-danger";
+                    } else if (student.status === "graduated") {
+                        statusVi = "Tốt nghiệp";
+                        badgeClass = "bg-info text-dark";
+                    }
 
                     const tr = document.createElement("tr");
                     tr.className = "clickable-row";
@@ -339,7 +384,7 @@
                         <td class="text-primary fw-medium">${student.fullName}</td>
                         <td>${student.dateOfBirth || ''}</td>
                         <td>${student.studentClassName || ''}</td>
-                        <td><span class="badge ${badgeClass}">${student.status}</span></td>
+                        <td><span class="badge ${badgeClass}">${statusVi}</span></td>
                         <td class="text-center">
                             <button class="btn btn-warning btn-action text-dark border-0"
                                     onclick="openEditModal(event, '${student.code}')" title="Chỉnh sửa">
@@ -355,6 +400,64 @@
                 console.error("Lỗi khi tải bảng:", error);
                 tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle me-2"></i>Không thể tải dữ liệu. Vui lòng thử lại.</td></tr>`;
             }
+        }
+
+        function updatePaginationInfo(pd) {
+            const start = (pd.number || 0) * (pd.size || 10) + 1;
+            const totalElements = pd.totalElements || 0;
+            const numberOfElements = pd.numberOfElements !== undefined ? pd.numberOfElements : (pd.size || 0);
+            const end = Math.min(start + numberOfElements - 1, totalElements);
+
+            document.getElementById('current-range').textContent = totalElements > 0 ? `${start}-${end}` : "0-0";
+            document.getElementById('total-elements').textContent = totalElements;
+        }
+
+        function renderPaginationControls(pd) {
+            const container = document.getElementById('pagination-controls');
+            container.innerHTML = "";
+
+            const totalPages = pd.totalPages || 0;
+            const number = pd.number || 0;
+            const first = pd.first !== undefined ? pd.first : (number === 0);
+            const last = pd.last !== undefined ? pd.last : (number >= totalPages - 1);
+
+            // Nút Về đầu
+            container.appendChild(createPageItem('Đầu', 0, first));
+            // Nút Trước
+            container.appendChild(createPageItem('Trước', number - 1, first));
+
+            // Hiển thị các trang xung quanh trang hiện tại (tối đa 5 trang)
+            let startPage = Math.max(0, number - 2);
+            let endPage = Math.min(totalPages - 1, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(0, endPage - 4);
+
+            for (let i = startPage; i <= endPage; i++) {
+                container.appendChild(createPageItem(i + 1, i, false, i === number));
+            }
+
+            // Nút Tiếp
+            container.appendChild(createPageItem('Tiếp', number + 1, last));
+            // Nút Cuối
+            container.appendChild(createPageItem('Cuối', totalPages - 1, last));
+        }
+
+        function createPageItem(label, page, disabled, active = false) {
+            const li = document.createElement('li');
+            li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+            
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = label;
+            if (!disabled && !active) {
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    renderTable(page);
+                };
+            }
+            
+            li.appendChild(a);
+            return li;
         }
 
         async function showDetail(studentCode) {

@@ -6,6 +6,8 @@ import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import com.example.demo.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,12 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentListDTO> getAll() {
         return studentRepo.findByIsActiveTrueAndDeletedAtIsNull()
                 .stream().map(this::toListDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<StudentListDTO> getAllPaged(Pageable pageable) {
+        return studentRepo.findByIsActiveTrueAndDeletedAtIsNull(pageable)
+                .map(this::toListDTO);
     }
 
     @Override
@@ -154,6 +162,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Page<StudentListDTO> searchPaged(String keyword, UUID departmentId, UUID majorId, String status, UUID classId, Pageable pageable) {
+        return studentRepo.searchPaged(keyword, departmentId, majorId, status, classId, pageable)
+                .map(this::toListDTO);
+    }
+
+    @Override
     @Transactional
     public void transfer(StudentTransferDTO dto, UUID doneBy) {
         Objects.requireNonNull(dto, "Dữ liệu chuyển lớp không được để trống");
@@ -173,7 +187,9 @@ public class StudentServiceImpl implements StudentService {
             old.setStatus("completed");
             old.setNote(dto.getReason());
             old.setIsActive(false);
-            old.setUpdatedBy(doneBy);
+            if (doneBy != null) {
+                old.setUpdatedBy(doneBy);
+            }
             sectionRepo.save(old);
         }
 
@@ -185,13 +201,15 @@ public class StudentServiceImpl implements StudentService {
                 .note(dto.getReason())
                 .startDate(LocalDateTime.now())
                 .isActive(true)
-                .createdBy(doneBy)
+                .createdBy(doneBy) // Cảnh báo này có thể vẫn còn nếu Builder yêu cầu @NonNull, nhưng Builder của Lombok thường không ép buộc trừ khi cấu hình
                 .build();
         sectionRepo.save(newSection);
 
         // Cập nhật lớp hiện tại trên students
         student.setStudentClass(newClass);
-        student.setUpdatedBy(doneBy);
+        if (doneBy != null) {
+            student.setUpdatedBy(doneBy);
+        }
         studentRepo.save(student);
     }
 

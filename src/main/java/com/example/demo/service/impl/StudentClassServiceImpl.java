@@ -5,6 +5,8 @@ import com.example.demo.entity.StudentClass;
 import com.example.demo.repository.*;
 import com.example.demo.service.StudentClassService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,12 @@ public class StudentClassServiceImpl implements StudentClassService {
     public List<StudentClassListDTO> getAll() {
         return classRepo.findByIsActiveTrueAndDeletedAtIsNull()
                 .stream().map(this::toListDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<StudentClassListDTO> getAllPaged(Pageable pageable) {
+        return classRepo.findByIsActiveTrueAndDeletedAtIsNull(pageable)
+                .map(this::toListDTO);
     }
 
     @Override
@@ -96,6 +104,12 @@ public class StudentClassServiceImpl implements StudentClassService {
         return list.stream().map(this::toListDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public Page<StudentClassListDTO> searchPaged(String keyword, UUID departmentId, UUID majorId, Pageable pageable) {
+        return classRepo.searchPaged(keyword, departmentId, majorId, pageable)
+                .map(this::toListDTO);
+    }
+
     private void mapFromDTO(StudentClass sc, StudentClassSaveDTO dto) {
         Objects.requireNonNull(dto, "DTO không được để trống");
         sc.setCode(dto.getCode());
@@ -125,6 +139,8 @@ public class StudentClassServiceImpl implements StudentClassService {
         d.setCode(sc.getCode());
         d.setName(sc.getName());
         if (sc.getDepartment() != null) d.setDepartmentName(sc.getDepartment().getName());
+        if (sc.getMajor() != null) d.setMajorName(sc.getMajor().getMajorName());
+        if (sc.getAcademicYear() != null) d.setAcademicYearName(sc.getAcademicYear().getAcademicYear());
         if (sc.getEmployee() != null) d.setAdvisorName(sc.getEmployee().getFullName());
         d.setIsActive(sc.getIsActive());
         return d;
