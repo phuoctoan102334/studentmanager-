@@ -1,5 +1,6 @@
 package com.example.demo.dto.student;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -9,14 +10,20 @@ public class StudentDetailDTO {
     private UUID id;
     private String code;
     private String fullName;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
     private String gender;
     private String personalIdentificationNumber;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfIssue;
     private String cardPlace;
     private String address;
     private String currentAddress;
     private String status;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate admissionYear;
     private Boolean isActive;
     

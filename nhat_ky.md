@@ -158,3 +158,24 @@
 - Nguyên nhân: DTO thiếu trường và Service chưa map dữ liệu, dẫn đến Frontend không có thông tin để hiển thị.
 - Kỹ thuật: Sử dụng JOIN FETCH trong JPQL để lấy dữ liệu quan hệ một cách tối ưu, tránh N+1 query.
 - Kết quả: Ngành và Niên khóa hiển thị đầy đủ, mượt mà trên giao diện.
+
+## [2026-04-22] - Fix lỗi hiển thị thời gian (bỏ phần giờ)
+- **Thay đổi**: Cập nhật Backend DTOs và Frontend HTML/JS.
+- **Nguyên nhân**: Các trường thời điểm tạo/cập nhật và ngày nhập học hiển thị cả phần giờ (ví dụ: T00:00:00 hoặc T14:30:00), gây mất thẩm mỹ và không cần thiết.
+- **Kỹ thuật**: 
+    - Dùng @JsonFormat(pattern = "yyyy-MM-dd") tại các DTO để định dạng đầu ra API.
+    - Loại bỏ các hàm xử lý chuỗi thủ công .replace('T', ' ') ở frontend.
+    - Bổ sung logic lọc chuỗi ISO trong vòng lặp gán dữ liệu tự động của Sinh viên.
+- **Kết quả**: Tất cả các trường ngày tháng trên toàn hệ thống chỉ hiển thị định dạng YYYY-MM-DD.
+
+## [2026-04-22] - Fix triệt để hiển thị ngày (Frontend Patch)
+- **Thay đổi**: Cập nhật hàm hiển thị trong classes.html và dvisor_sections.html.
+- **Nguyên nhân**: Dù đã sửa Backend DTO nhưng một số trường hợp vẫn hiển thị chuỗi thời gian đầy đủ do cấu hình hoặc cache.
+- **Kỹ thuật**: Sử dụng .substring(0, 10) để cắt chuỗi ngày tháng ngay tại Frontend trước khi gán vào DOM.
+- **Kết quả**: Đảm bảo 100% các trường "Thời điểm tạo" và "Cập nhật" chỉ hiển thị ngày, bất kể chuỗi đầu vào.
+
+## [2026-04-22] - Fix lỗi không hiển thị Niên khóa trong Chi tiết Lớp học
+- **Thay đổi**: Cập nhật classes.html.
+- **Nguyên nhân**: Sai lệch tên trường giữa Frontend (cademicYearName) và Backend DTO (cademicYear).
+- **Kỹ thuật**: Sửa tên trường trong JavaScript để khớp với JSON trả về từ API.
+- **Kết quả**: Niên khóa đã hiển thị đúng trong modal Chi tiết Lớp học.

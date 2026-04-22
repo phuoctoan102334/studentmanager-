@@ -1,5 +1,6 @@
 package com.example.demo.dto.studentsection;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,11 @@ public class StudentSectionDTO {
     private String trainingProgramName;
     private String status;
     private String note;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private Boolean isActive;
 

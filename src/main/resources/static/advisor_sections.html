@@ -352,9 +352,12 @@
                 ? '<span class="badge bg-success">Đang hiệu lực</span>' 
                 : '<span class="badge bg-secondary">Hết hiệu lực</span>';
             
-            document.getElementById('detail-created_at').textContent = adv.createdAt ? adv.createdAt.replace('T', ' ') : '---';
+            // Format ngày: chỉ lấy YYYY-MM-DD
+            const createdStr = adv.createdAt || '';
+            const updatedStr = adv.updatedAt || '';
+            document.getElementById('detail-created_at').textContent = createdStr.length > 10 ? createdStr.substring(0, 10) : (createdStr || '---');
             document.getElementById('detail-created_by').textContent = adv.createdBy || 'Hệ thống';
-            document.getElementById('detail-updated_at').textContent = adv.updatedAt ? adv.updatedAt.replace('T', ' ') : 'Chưa cập nhật';
+            document.getElementById('detail-updated_at').textContent = updatedStr.length > 10 ? updatedStr.substring(0, 10) : (updatedStr || 'Chưa cập nhật');
             document.getElementById('detail-updated_by').textContent = adv.updatedBy || '---';
             
             // Lưu ID vào hidden input để dùng cho các hàm trigger

@@ -70,10 +70,35 @@ public class StudentClassAdvisorServiceImpl implements AdvisorClassSectionServic
         AdvisorClassSection section = AdvisorClassSection.builder()
                 .employee(emp)
                 .studentClass(sc)
-                .startDate(LocalDateTime.now())
-                .isActive(true)
+                .startDate(dto.getStartDate() != null ? dto.getStartDate().atStartOfDay() : LocalDateTime.now())
+                .endDate(dto.getEndDate() != null ? dto.getEndDate().atStartOfDay() : null)
+                .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .createdBy(createdBy)
                 .build();
+        
+        advisorSectionRepo.save(section);
+    }
+
+    @Override
+    @Transactional
+    @SuppressWarnings("null")
+    public void updateAssignment(UUID id, AdvisorSectionSaveDTO dto, UUID updatedBy) {
+        AdvisorClassSection section = advisorSectionRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi phân công"));
+
+        Employee emp = employeeRepo.findById(dto.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+        StudentClass sc = classRepo.findById(dto.getStudentClassId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp"));
+
+        section.setEmployee(emp);
+        section.setStudentClass(sc);
+        if (dto.getStartDate() != null) {
+            section.setStartDate(dto.getStartDate().atStartOfDay());
+        }
+        section.setEndDate(dto.getEndDate() != null ? dto.getEndDate().atStartOfDay() : null);
+        section.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
+        section.setUpdatedBy(updatedBy);
         
         advisorSectionRepo.save(section);
     }

@@ -8,5 +8,6 @@ public interface AdvisorClassSectionService {
     List<AdvisorSectionListDTO> getAll();
     List<AdvisorSectionListDTO> getByClass(UUID classId);
     void assignAdvisor(AdvisorSectionSaveDTO dto, UUID createdBy);
+    void updateAssignment(UUID id, AdvisorSectionSaveDTO dto, UUID updatedBy);
     void endAssignment(AdvisorSectionEndDTO dto, UUID updatedBy);
 }

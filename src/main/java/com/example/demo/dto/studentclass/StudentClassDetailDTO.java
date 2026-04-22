@@ -1,5 +1,6 @@
 package com.example.demo.dto.studentclass;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,6 +22,8 @@ public class StudentClassDetailDTO {
     private String employeeName;
     private String advisorName;
     private Boolean isActive;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createdAt;
     private UUID createdBy;
 }

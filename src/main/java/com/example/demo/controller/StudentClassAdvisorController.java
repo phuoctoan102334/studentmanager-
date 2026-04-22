@@ -32,6 +32,12 @@ public class StudentClassAdvisorController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable UUID id, @RequestBody AdvisorSectionSaveDTO dto) {
+        advisorService.updateAssignment(id, dto, null);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/end/{id}")
     public ResponseEntity<Void> endAssignment(@PathVariable UUID id, @RequestBody AdvisorSectionEndDTO dto) {
         dto.setId(id);

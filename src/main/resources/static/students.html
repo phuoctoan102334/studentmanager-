@@ -479,7 +479,12 @@
                     } else if (key === 'isActive') {
                         element.innerHTML = student.isActive ? `<span class="badge bg-primary">Hoạt động</span>` : `<span class="badge bg-secondary">Khóa</span>`;
                     } else {
-                        element.textContent = student[key] || '---';
+                        let val = student[key] || '---';
+                        // Nếu là chuỗi ngày tháng (chứa dấu gạch ngang và có thể có T), chỉ lấy phần ngày
+                        if (typeof val === 'string' && val.includes('-') && val.includes('T')) {
+                            val = val.split('T')[0];
+                        }
+                        element.textContent = val;
                     }
                 }
             });

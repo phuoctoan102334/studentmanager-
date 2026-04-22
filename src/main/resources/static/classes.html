@@ -319,13 +319,17 @@
             if (!c) return;
             document.getElementById('detail-code').textContent = c.code;
             document.getElementById('detail-name').textContent = c.name;
-            document.getElementById('detail-academicYear').textContent = c.academicYearName || '---';
+            document.getElementById('detail-academicYear').textContent = c.academicYear || '---';
             document.getElementById('detail-departmentName').textContent = c.departmentName || '---';
             document.getElementById('detail-majorName').textContent = c.majorName || '---';
             document.getElementById('detail-trainingProgramName').textContent = c.trainingProgramName || '---';
             document.getElementById('detail-advisorName').textContent = c.advisorName || 'Chưa có cố vấn';
             document.getElementById('detail-isActive').innerHTML = c.isActive ? '<span class="badge bg-success">Hoạt động</span>' : '<span class="badge bg-secondary">Khóa</span>';
-            document.getElementById('detail-createdAt').textContent = c.createdAt ? c.createdAt.replace('T', ' ') : '---';
+            
+            // Format ngày: chỉ lấy YYYY-MM-DD
+            const createdStr = c.createdAt || '';
+            document.getElementById('detail-createdAt').textContent = createdStr.length > 10 ? createdStr.substring(0, 10) : (createdStr || '---');
+            
             document.getElementById('detail-createdBy').textContent = c.createdBy || 'Hệ thống';
             detailModal.show();
         }
